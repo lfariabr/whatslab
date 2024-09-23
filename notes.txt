@@ -46,9 +46,11 @@ backlog python wsgi.py
 _________________
 
 NEXT
-protect api access
-
 componente de cadastro de mensagens (txt/foto)
+escrever tudo o que tem no banco
+protect api access
+check vercel deploy
+
 integrar supabase
 implementar send_message_with_file
 ajustar menus home core
