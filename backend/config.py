@@ -12,6 +12,8 @@ app = Flask(__name__,
 
 CORS(app)
 
+# Vercel issue:
+app.instance_path = '/tmp/instance'
 
 load_dotenv()
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
