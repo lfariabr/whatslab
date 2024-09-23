@@ -35,7 +35,7 @@ datawrestler_part5: cross with whatsapp lead to see if they're appointment or le
 datawrestler_part6: cross it all df_receive_messages
  and send_message logs
 datawrestler_part7: app_context e 
-blueprint run-datawrestler
+blueprint run-datawrestlergit fetch origin
 datawrestler_part8: apscheduler in app context
 
 23/09
