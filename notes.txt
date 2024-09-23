@@ -38,6 +38,8 @@ datawrestler_part7: app_context e
 blueprint run-datawrestler
 datawrestler_part8: apscheduler in app context
 
+23/09
+organizar .env e deployar
 
 _________________
 backlog python wsgi.py
@@ -46,7 +48,6 @@ _________________
 
 NEXT
 protect api access
-organizar .env e deployar
 
 componente de cadastro de mensagens (txt/foto)
 integrar supabase
