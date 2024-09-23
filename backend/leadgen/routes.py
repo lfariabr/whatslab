@@ -41,9 +41,14 @@ def botox():
 
 ####### IMPORT CSV
 
-# Defining upload folder
-upload_folder = os.path.join(os.path.dirname(__file__), 'uploads')
+# Defining upload folder - local
+# upload_folder = os.path.join(os.path.dirname(__file__), 'uploads')
+# os.makedirs(upload_folder, exist_ok=True)
+
 allowed_extensions = {'csv', 'xlsx'}  
+
+# Test Vercel
+upload_folder = '/tmp/uploads'
 os.makedirs(upload_folder, exist_ok=True)
 
 
