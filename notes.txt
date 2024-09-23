@@ -1,0 +1,60 @@
+18/09
+api
+core
+instance
+leadgen
+users
+frontend
+
+19/09
+componente apicrmgraphql
+leadgen > subidor de leads
+frontend > upload.html, view_leads.html
+
+20/09
+home/core
+home/botox
+componente apisocialhub + graphQL
+requirements.txt
+send message - test.py
+send message - test graphiQL
+
+21/09
+datawrestler_part1: GET from core, leadLP + LeadWPP to process
+datawrestler_part2: groupby sent_message
+datawrestler_part2: GET from api socialhub response of sent message
+Blueprint & routes datawrestler
+GraphQL datawrestler 
+datawrestler_part3: GET from crm graphql appointments
+datawrestler_part3: GET from crm graphql view_leads
+
+22/09
+datawrestler_part3 resolvers.py: include date filter
+datawrestler_part4: resolvers.py resolve leads with same date filter
+datawrestler_part5: cross with whatsapp lead to see if they're appointment or leads
+datawrestler_part6: cross it all df_receive_messages
+ and send_message logs
+datawrestler_part7: app_context e 
+blueprint run-datawrestler
+datawrestler_part8: apscheduler in app context
+
+
+_________________
+backlog python wsgi.py
+_________________
+
+
+NEXT
+protect api access
+organizar .env e deployar
+
+componente de cadastro de mensagens (txt/foto)
+integrar supabase
+implementar send_message_with_file
+ajustar menus home core
+incluir stripe
+
+deeper integration pro-corpo crm
+- fix the weird thing "phone": null on graphql query
+- POST to crmgrahql paid media/leadLPL to CRM (?) temp_lead
+- POST to crmgraphql follow_up comments (pos-vendas)

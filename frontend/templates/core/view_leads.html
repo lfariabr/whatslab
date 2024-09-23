@@ -1,0 +1,29 @@
+{% extends "core/base_core.html" %}
+
+{% block content %}
+    <h2>Leads WhatsApp</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Telefone</th>
+                <th>Data de Criação</th>
+                <th>Tag</th>
+                <th>Fonte</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for lead in leads %}
+            <tr>
+                <td>{{ lead.id }}</td>
+                <td>{{ lead.name }}</td>
+                <td>{{ lead.phone }}</td>
+                <td>{{ lead.created_date }}</td>
+                <td>{{ lead.tag }}</td>
+                <td>{{ lead.source }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
