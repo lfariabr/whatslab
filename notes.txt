@@ -56,16 +56,22 @@ preparar para papo com Samir
 27/09
 resolver certificado disparo
 
+28/09 
+CRUD msgs componente de cadastro de mensagens (txt/foto)
+header dinamico frontend core
+ajuste das rotas para crud msgs
+deploy github
+componente cadastrar telefones no frontend
+deploy github
+
 _________________
 backlog python wsgi.py
 _________________
 
 NEXT
-__ 
-componente de cadastro de mensagens (txt/foto)
 
-__
 organizar disparo das mensagens de acordo com cadastro
+permitir subir arquivos no messageForms
 
 protect api access
 integrar supabase

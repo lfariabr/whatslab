@@ -19,3 +19,9 @@ class MessageForm(FlaskForm):
     interval = StringField('Interval', validators=[DataRequired()])
     file = StringField('File')
     submit = SubmitField('Salvar')
+
+class UserPhoneForm(FlaskForm):
+    phone_number = StringField('Phone Number', validators=[DataRequired()])
+    phone_token = StringField('Phone Token', validators=[DataRequired()])
+    description = StringField('Description')
+    submit = SubmitField('Save')

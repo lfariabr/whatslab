@@ -2,6 +2,12 @@
 
 {% block content %}
     <h2>Leads WhatsApp</h2>
+
+        <!-- Botão para redirecionar ao upload de CSV -->
+        <div class="text-center mb-4">
+            <a href="{{ url_for('leadgen.upload') }}" class="btn btn-primary btn-lg">Subir Leads via CSV</a>
+        </div>
+
     <table class="table">
         <thead>
             <tr>

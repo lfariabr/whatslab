@@ -35,11 +35,14 @@ class UserPhone(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     phone_number = db.Column(db.String(20))
     phone_token = db.Column(db.String(256))
+    description = db.Column(db.String(256))  # Novo campo adicionado
 
-    def __init__(self, user_id, phone_number, phone_token):
+
+    def __init__(self, user_id, phone_number, phone_token, description=None):
         self.user_id = user_id
         self.phone_number = phone_number
         self.phone_token = phone_token
+        self.description = description  # Novo campo no init
 
 class MessageList(db.Model):
 

@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template, flash, redirect, url_for
 from flask_login import login_required, current_user
 from backend.config import db
-from backend.users.models import MessageList
-from backend.users.forms import MessageForm
+from backend.users.models import MessageList, UserPhone
+from backend.users.forms import MessageForm, UserPhoneForm
 
 
 core_blueprint = Blueprint('core', __name__)
@@ -77,3 +77,55 @@ def delete_message(id):
     db.session.commit()
     flash('Mensagem deletada com sucesso!')
     return redirect(url_for('core.message_list'))
+
+# Route for Adding new Phone
+@core_blueprint.route('/new_phone', methods=['GET', 'POST'])
+@login_required
+def new_phone():
+    form = UserPhoneForm()
+    if form.validate_on_submit():
+        phone = UserPhone(user_id=current_user.id,
+                          phone_number=form.phone_number.data,
+                          phone_token=form.phone_token.data, 
+                          description=form.description.data)
+        
+        db.session.add(phone)
+        db.session.commit()
+        flash('Telefone cadastrado com sucesso!')
+        return redirect(url_for('core.phone_list'))
+    
+    return render_template('core/new_phone.html', form=form)
+
+# Route for Listing Phones
+@core_blueprint.route('/phone_list', methods=['GET'])
+@login_required
+def phone_list():
+    phones = UserPhone.query.all()
+    return render_template('core/phone_list.html', phones=phones)
+
+# Editing Phone Number
+@core_blueprint.route('/edit_phone/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit_phone(id):
+    phone = UserPhone.query.get_or_404(id)
+    form = UserPhoneForm(obj=phone)
+
+    if form.validate_on_submit():
+        phone.phone_number = form.phone_number.data
+        phone.phone_token = form.phone_token.data
+        phone.description = form.description.data
+        db.session.commit()
+        flash('Telefone atualizado com sucesso!')
+        return redirect(url_for('core.phone_list'))
+
+    return render_template('core/edit_phone.html', form=form, phone=phone)
+
+# Deleting Phone Number
+@core_blueprint.route('/delete_phone/<int:id>', methods=['POST'])
+@login_required
+def delete_phone(id):
+    phone = UserPhone.query.get_or_404(id)
+    db.session.delete(phone)
+    db.session.commit()
+    flash('Telefone deletado com sucesso!')
+    return redirect(url_for('core.phone_list'))
