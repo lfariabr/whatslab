@@ -184,8 +184,30 @@
     <a class="navbar-brand" href="{{ url_for('index') }}">CRM WhatsApp</a>
     <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ml-auto">
+            {% if current_user.is_authenticated %}
+            <!-- When the user is logged in -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('core.index') }}">Core</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('leadgen.upload') }}">Subir Leads</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('leadgen.view_leads_whatsapp') }}">Ver Leads</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('core.message_list') }}">Mensagens</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('users.logout') }}">Logout</a>
+            </li>
+            {% else %}
+            <!-- When the user is not logged in -->
             <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('core.index') }}">Login</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('users.register') }}">Register</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="#services">Serviços</a>
@@ -193,20 +215,13 @@
             <li class="nav-item">
                 <a class="nav-link" href="#about">Sobre Nós</a>
             </li>
-            {% if current_user.is_authenticated %}
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('leadgen.upload') }}">Upload</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('leadgen.view_leads_whatsapp') }}">Leads</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('users.logout') }}">Logout</a>
-            </li>
             {% endif %}
         </ul>
     </div>
+    {% if not current_user.is_authenticated %}
+    <!-- Show the "Saber Mais" button only if the user is not logged in -->
     <a class="btn-saber-mais ml-auto" href="#contact-form">SABER MAIS</a>
+    {% endif %}
 </nav>
 
 <!-- Flash Messages -->

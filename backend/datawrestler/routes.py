@@ -21,6 +21,7 @@ datawrestler_blueprint.add_url_rule(
     )
 )
 
+# Se eu quiser chamar no na URL...
 @datawrestler_blueprint.route('/run-datawrestler', methods=['GET'])
 def run_datawrestler():
     # Definir o intervalo de datas
@@ -35,7 +36,7 @@ def run_datawrestler():
     
     # Chamar a função de processamento dos dados
     leads_df = data_wrestling(leads_landing, leads_whatsapp, appointments_data, df_count_messages_by_phone, leads_data)
-    
+
     # Retornar um status ou resultado da execução como JSON
     return jsonify({"status": "Success", "message": "Data wrestling completed", "total_leads": len(leads_df)})
 

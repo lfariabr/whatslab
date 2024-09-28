@@ -56,7 +56,7 @@ class LeadWhatsapp(db.Model):
             'id': self.id,
             'name': self.name,
             'phone': self.phone,
-            'created_date': self.created_date,
+            'created_date': self.created_date.strftime('%Y-%m-%d %H:%M:%S') if self.created_date else None,
             'tag': self.tag,
             'source': self.source
         }

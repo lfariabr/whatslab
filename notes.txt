@@ -39,19 +39,37 @@ blueprint run-datawrestlergit fetch origin
 datawrestler_part8: apscheduler in app context
 
 23/09
-organizar .env e deployar
+organizar .env
+organizar requirements.txt
+push github
+vercel deploy & connect
+escrever tudo o que tem no banco
+
+24/09
+Entender melhor o datarwrestler running scheduler
+Mapear o erro de certificado
+Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED
+
+25/09
+preparar para papo com Samir
+
+27/09
+resolver certificado disparo
 
 _________________
 backlog python wsgi.py
 _________________
 
 NEXT
+__ 
 componente de cadastro de mensagens (txt/foto)
-escrever tudo o que tem no banco
-protect api access
-check vercel deploy
 
+__
+organizar disparo das mensagens de acordo com cadastro
+
+protect api access
 integrar supabase
+
 implementar send_message_with_file
 ajustar menus home core
 incluir stripe

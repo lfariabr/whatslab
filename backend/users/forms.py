@@ -12,3 +12,10 @@ class RegistrationForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
     submit = SubmitField('Register')
+
+class MessageForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired()])
+    text = StringField('Text', validators=[DataRequired()])
+    interval = StringField('Interval', validators=[DataRequired()])
+    file = StringField('File')
+    submit = SubmitField('Salvar')

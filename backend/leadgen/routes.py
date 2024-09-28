@@ -20,6 +20,7 @@ def test_flash():
 
 @leadgen_blueprint.route('/botox', methods=['GET', 'POST'])
 def botox():
+    
     form = LeadForm()
     if form.validate_on_submit():
         name = form.name.data
@@ -59,9 +60,15 @@ def allowed_file(filename):
 def upload():
     if request.method == 'POST':
         # Capturando a data do formulário. Se estiver vazia, define como data atual.
-        created_date = request.form.get('date')
-        if not created_date:
-            created_date = datetime.now().strftime('%Y-%m-%d')  # Formato: YYYY-MM-DD
+        date_str = request.form.get('date')
+        if not date_str:
+            created_date = datetime.now()  # Mantemos como objeto datetime
+        else:
+            try:
+                created_date = datetime.strptime(date_str, '%Y-%m-%d')  # Convertendo para datetime
+            except ValueError:
+                flash('Formato de data inválido. Use o formato YYYY-MM-DD.')
+                return redirect(url_for('leadgen.upload'))
         
         botox_file = request.files.get('botox_file')
         preenchimento_file = request.files.get('preenchimento_file')
@@ -114,5 +121,9 @@ def upload():
 @leadgen_blueprint.route('/leads_whatsapp', methods=['GET'])
 @login_required 
 def view_leads_whatsapp():
-    leads = LeadWhatsapp.query.all()
+    try:
+        leads = LeadWhatsapp.query.all()
+    except TypeError as e:
+        # Log the error, inform the user, or return a friendly error message
+        return "Oh dear, the time machine broke. We've got dates flying all over the place!", 500
     return render_template('core/view_leads.html', leads=leads)

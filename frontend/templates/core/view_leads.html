@@ -19,7 +19,7 @@
                 <td>{{ lead.id }}</td>
                 <td>{{ lead.name }}</td>
                 <td>{{ lead.phone }}</td>
-                <td>{{ lead.created_date }}</td>
+                <td>{{ lead.created_date.strftime('%Y-%m-%d %H:%M:%S') if lead.created_date else 'Data não disponível' }}</td>
                 <td>{{ lead.tag }}</td>
                 <td>{{ lead.source }}</td>
             </tr>

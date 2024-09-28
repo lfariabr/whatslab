@@ -54,24 +54,23 @@ def not_found(error):
 # ------------------------------
 # SCHEDULER SETUP
 # ------------------------------
-# Importar a função `run_datawrestler`
-from .datawrestler.routes import run_datawrestler
+# from .datawrestler.routes import run_datawrestler
+# from .datawrestler.resolvers import run_data_wrestling, get_leads_whatsapp, data_wrestling
 
-# Função que agenda o datawrestler para rodar automaticamente
-def schedule_datawrestler():
-    with app.app_context():
-        print("Executando o DATAWRESTLER automaticamente...")
-        run_datawrestler()
+# # Função que agenda o datawrestler para rodar automaticamente
+# def schedule_datawrestler():
+#     with app.app_context():
+#         print("DataWrestler online!!!")
+#         run_data_wrestling() # Testando o completo
 
-# Configurando o scheduler
-scheduler = BackgroundScheduler()
-scheduler.add_job(func=schedule_datawrestler, trigger="interval", hours=24)  # minutes=1
-scheduler.start()
+# # Configurando o scheduler
+# scheduler = BackgroundScheduler()
+# scheduler.add_job(func=schedule_datawrestler, trigger="interval", minutes=1)  # minutes=1 / hours=24
+# scheduler.start()
 
-# Para garantir que o scheduler seja desligado corretamente ao finalizar a aplicação
-atexit.register(lambda: scheduler.shutdown())
+# # Garante que o scheduler desligue ao finalizar a aplicação
+# atexit.register(lambda: scheduler.shutdown())
 
-# ------------------------------
 
 with app.app_context():
     db.create_all()

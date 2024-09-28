@@ -1,21 +1,15 @@
+import os
+import json
+import pandas as pd
+from dotenv import load_dotenv
+from datetime import datetime, timedelta
 
 from backend.config import db, app
-import os
-import pandas as pd
 from backend.leadgen.models import LeadLandingPage, LeadWhatsapp
-from backend.apisocialhub.models import MessageLog
-from datetime import datetime, timedelta
+from backend.apisocialhub.models import MessageLog, MessageList
+from backend.apisocialhub.resolvers import message_handler, send_message
 from backend.apicrmgraphql.resolvers.appointments_resolver import fetch_appointments, filter_and_clean_appointments
 from backend.apicrmgraphql.resolvers.leads_resolver import fetch_all_leads, filter_and_clean_leads
-from backend.config import db, app
-import os
-import pandas as pd
-from backend.leadgen.models import LeadLandingPage, LeadWhatsapp
-from backend.apisocialhub.models import MessageLog
-from datetime import datetime, timedelta
-from backend.apicrmgraphql.resolvers.appointments_resolver import fetch_appointments, filter_and_clean_appointments
-from backend.apicrmgraphql.resolvers.leads_resolver import fetch_all_leads, filter_and_clean_leads
-from dotenv import load_dotenv
 
 # Funções para obter e processar dados
 
@@ -23,13 +17,26 @@ def get_leads_from_core():
     leads_landing = LeadLandingPage.query.all()
     leads_whatsapp = LeadWhatsapp.query.all()
     return leads_landing, leads_whatsapp
+# Pensar em ter um limite (paginação - 100 por vez)
+# trazer uma contagem inicial de leads
 
+def get_leads_landing():
+    return LeadLandingPage.query.all()
+
+def get_leads_whatsapp():
+    leads = LeadWhatsapp.query.all()
+    print(f"Retrieved {len(leads)} leads from WhatsApp.")
+    return leads
+    # return LeadWhatsapp.query.all()
+
+# Depois fazer o mesmo para o LeadLandingPage
 def count_sent_messages_to_lead_phone():
     return db.session.query(
         LeadWhatsapp.phone, db.func.count(MessageLog.id)
     ).join(
         MessageLog, LeadWhatsapp.id == MessageLog.lead_phone_id
     ).group_by(LeadWhatsapp.phone).all()
+
 
 def get_appointments(start_date, end_date):
     return fetch_appointments(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
@@ -42,8 +49,8 @@ def data_wrestling(leads_landing, leads_whatsapp, appointments, count_messages_b
     sent_messages_phones = {row[0]: row[1] for row in count_messages_by_phone}
     appointment_phones = {appointment['telephones'][0] for appointment in appointments if appointment['telephones']}
     leads_phones = {lead['telephone'][0] for lead in leads if lead['telephone']}
+    
     leads_df = []
-
     for lead in df_leads_receive_message:
         phone = lead.phone.strip()
         sent_message_count = sent_messages_phones.get(phone, 0)
@@ -75,8 +82,17 @@ def run_data_wrestling():
     appointments_data = get_appointments(start_date, end_date)
     leads_data = get_leads(start_date, end_date)
 
-    # Processar dados
+    # Processar dados       //     #get_leads_landing e #get_leads_whatsapp
     leads_df = data_wrestling(leads_landing, leads_whatsapp, appointments_data, df_count_messages_by_phone, leads_data)
+
+    # Convert the DataFrame to a list of dictionaries
+    leads_list = leads_df.to_dict(orient='records')
+
+    # Serialize the list to a JSON-formatted string
+    leads_json = json.dumps(leads_list, default=str, ensure_ascii=False, indent=4)
+
+    # Print the JSON string
+    print(leads_json)
 
     # Enviar mensagens com base nos leads processados
     today = datetime.now().strftime("%d/%m/%Y")
@@ -88,10 +104,14 @@ def run_data_wrestling():
         has_lead = cliente['has_lead']
 
         if not has_appointment and not has_lead:
-            if source == "unknown":  # Exemplo de lógica para uma campanha
+
+            if source == "Whatsapp":  # Exemplo de lógica para uma campanha
                 if contador >= 0:
-                    mensagem = MessageList(title="Botox Primeira Mensagem", text=f"Oi {phone}, venha fazer sua avaliação de Botox!")
-                    response = send_message(phone, mensagem.to_dict(), api_token)
+                    # mensagem = MessageList(title="Botox Primeira Mensagem", text=f"Teste de mensagem!")
+                    # response = send_message(phone, mensagem.to_dict(), api_token)
+                    
+                    mensagem = "Teste de Mensagem!!!!"
+                    response = send_message(phone, mensagem, api_token)
                     status_envio = response.get("success", False)
 
                     if status_envio:
@@ -101,7 +121,10 @@ def run_data_wrestling():
                         print(f"Erro ao enviar para: {phone}")
                         print(f"Resposta: {response}")
 
-# Executar somente se for chamado diretamente
+def test_function():
+    print("aaaaaaaaaaaa --- This is a test!")
+
+# Executar somente se for chamado diretamente o resolvers.py
 if __name__ == "__main__":
     with app.app_context():
         run_data_wrestling()

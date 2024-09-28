@@ -1,0 +1,47 @@
+{% extends "core/base_core.html" %}
+
+{% block content %}
+<section class="core-section py-5">
+    <div class="container">
+        <h1 class="text-center mb-5">Mensagens</h1>
+
+        <!-- Add New Message Button -->
+        <div class="text-right mb-4">
+            <a href="{{ url_for('core.new_message') }}" class="btn btn-primary">Cadastrar Nova Mensagem</a>
+        </div>
+
+        <!-- Table for Listing Messages -->
+        <div class="row">
+            <div class="col-md-12">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Título</th>
+                            <th>Texto</th>
+                            <th>Intervalo</th>
+                            <th>Arquivo</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for message in messages %}
+                        <tr>
+                            <td>{{ message.title }}</td>
+                            <td>{{ message.text }}</td>
+                            <td>{{ message.interval }}</td>
+                            <td>{{ message.file }}</td>
+                            <td>
+                                <a href="{{ url_for('core.edit_message', id=message.id) }}" class="btn btn-sm btn-warning">Editar</a>
+                                <form action="{{ url_for('core.delete_message', id=message.id) }}" method="POST" style="display:inline;">
+                                    <button type="submit" class="btn btn-sm btn-danger">Deletar</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
