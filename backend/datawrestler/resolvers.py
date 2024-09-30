@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from datetime import datetime, timedelta
 
 from backend.config import db, app
+from backend.users.models import UserPhone
 from backend.leadgen.models import LeadLandingPage, LeadWhatsapp
 from backend.apisocialhub.models import MessageLog, MessageList
 from backend.apisocialhub.resolvers import message_handler, send_message
@@ -37,12 +38,50 @@ def count_sent_messages_to_lead_phone():
         MessageLog, LeadWhatsapp.id == MessageLog.lead_phone_id
     ).group_by(LeadWhatsapp.phone).all()
 
-
 def get_appointments(start_date, end_date):
     return fetch_appointments(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
 
 def get_leads(start_date, end_date):
     return fetch_all_leads(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
+
+def get_message():
+    # # Testing purposes:
+    # print(MessageList.query.all())
+
+    # Creating an empty dic to be filled upon query
+    messages_dic = {}
+    # Runnig the query to grab MessageList from DB
+    messages = MessageList.query.all()
+
+    # For to retrieve each individual message and their data
+    for item in messages:
+        type_of_message = item.title
+        messages_dic[type_of_message] = {
+            'text': item.text,
+            'interval': item.interval,
+            'file': item.file
+        }
+    # return the dic to serve datawrestler
+    return messages_dic
+
+def get_phone_token():
+    # Creating an empty dic to be filled upon a query
+    phones_dic = {}
+    phone_list = UserPhone.query.all()
+
+    # For to retrieve each individual phone (id, number and token)
+    for phone in phone_list:
+        phones_dic[phone.phone_number] = {
+            'id': phone.id, 
+            'phone_token': phone.phone_token, 
+            'description': phone.description
+        }
+    print("Phones Dictionary:", phones_dic)  # Debugging print
+    return phones_dic
+
+    ## TESTES....
+    # print(phones_dic)
+
 
 def data_wrestling(leads_landing, leads_whatsapp, appointments, count_messages_by_phone, leads):
     df_leads_receive_message = leads_whatsapp + leads_landing
@@ -67,64 +106,103 @@ def data_wrestling(leads_landing, leads_whatsapp, appointments, count_messages_b
 
     return pd.DataFrame(leads_df)
 
-# Função principal para executar o processamento
+# Main function to process all the data we have carefully gathered
 def run_data_wrestling():
-    # Configurar datas e carregar env
-    load_dotenv()
-    api_token = os.getenv("API_KEY")
-
+    print("Executing...")
+    
+    # Initial data
     start_date = datetime.now() - timedelta(days=0)
     end_date = datetime.now() + timedelta(days=0)
+    today = datetime.now().strftime("%d/%m/%Y")
 
-    # Obter dados
+    load_dotenv()
+    # api_token = os.getenv("API_KEY")
+    ## The above has been commented beacause we're now 
+    ## grabbing the api token from the UserPhone model
+
+    # Get data
     leads_landing, leads_whatsapp = get_leads_from_core()
     df_count_messages_by_phone = count_sent_messages_to_lead_phone()
     appointments_data = get_appointments(start_date, end_date)
     leads_data = get_leads(start_date, end_date)
 
-    # Processar dados       //     #get_leads_landing e #get_leads_whatsapp
+    # Process data
+    # maybe change individually to get_leads_landing e #get_leads_whatsapp
     leads_df = data_wrestling(leads_landing, leads_whatsapp, appointments_data, df_count_messages_by_phone, leads_data)
 
     # Convert the DataFrame to a list of dictionaries
     leads_list = leads_df.to_dict(orient='records')
-
-    # Serialize the list to a JSON-formatted string
     leads_json = json.dumps(leads_list, default=str, ensure_ascii=False, indent=4)
-
-    # Print the JSON string
     print(leads_json)
 
-    # Enviar mensagens com base nos leads processados
-    today = datetime.now().strftime("%d/%m/%Y")
+    # Get the messages from the database
+    messages_dic = get_message()
+
+    # Get the phones from the database
+    phones_dic = get_phone_token()
+
+    # Send messages based on processed leads
     for index, cliente in leads_df.iterrows():
         phone = cliente['phone']
         contador = cliente['sent_message_count']
         source = cliente['source']
         has_appointment = cliente['has_appointment']
         has_lead = cliente['has_lead']
+        ####### TASK ########
+        # Integrar este contador acima com o contador cadastrado pelo UserPhone
 
-        if not has_appointment and not has_lead:
+        if not has_appointment and not has_lead and source == "Whatsapp":
 
-            if source == "Whatsapp":  # Exemplo de lógica para uma campanha
-                if contador >= 0:
-                    # mensagem = MessageList(title="Botox Primeira Mensagem", text=f"Teste de mensagem!")
-                    # response = send_message(phone, mensagem.to_dict(), api_token)
-                    
-                    mensagem = "Teste de Mensagem!!!!"
-                    response = send_message(phone, mensagem, api_token)
-                    status_envio = response.get("success", False)
+            # Defining message based on conditions
+            if contador == 0:
+                message_key = "botoxd1"
+            elif contador == 1:
+                message_key = "botoxd2"
 
-                    if status_envio:
-                        print(f"botoxd1 enviada para: {phone}")
-                        log = MessageLog([phone, "botoxd1", today, response])
-                    else:
-                        print(f"Erro ao enviar para: {phone}")
-                        print(f"Resposta: {response}")
+            # Fetching appropriate message and file
+            mensagem = messages_dic.get(message_key, {}).get("text", None)
+            file = messages_dic.get(message_key, {}).get("file", None)
 
-def test_function():
-    print("aaaaaaaaaaaa --- This is a test!")
+            if not mensagem:
+                print(f"Erro ao buscar mensagem: {message_key}")
+                continue
+            
+            # Fetching appropriate phone number that is sending the message
+            # Using the first sender phone in the dictionary
+            sender_phone_data = list(phones_dic.values())[0]  
+            ###### TASK #######
+            # Here we can add more logic to handle multiple sender phones 
+            # Ativo Botox/Ativo Preenchimento/Falta/Pós-Vendas/NPS...
 
-# Executar somente se for chamado diretamente o resolvers.py
+            # Fetching appropriate phone token
+            api_token = sender_phone_data.get("phone_token", None)
+
+            if not api_token:
+                print(f"Erro ao buscar phone_token for sender: {sender_phone_data}")
+                continue
+
+            # Sending the message
+            response = send_message(phone, mensagem, api_token)
+            status_envio = response.get("success", False)
+            
+            # Handling response and logging
+            if status_envio:
+                print(f"{message_key} enviada para: {phone}")
+                log = MessageLog(
+                    sender_phone_id=sender_phone_data['id'], 
+                    source="Whatsapp",
+                    lead_phone_id=cliente['phone'],
+                    status="sent",
+                    message_id=message_key,  # Add this if it's the message ID
+                    message_text=mensagem
+                )
+                db.session.add(log)
+                db.session.commit()
+def view_logs():
+    logs = MessageLog.query.all()
+    print(logs)
+
+# Execute only if we call directly from resolvers.py
 if __name__ == "__main__":
     with app.app_context():
         run_data_wrestling()

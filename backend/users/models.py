@@ -44,6 +44,9 @@ class UserPhone(db.Model):
         self.phone_token = phone_token
         self.description = description  # Novo campo no init
 
+    def __repr__(self):
+        return f"Phone {self.phone_number}, Token {self.phone_token}, Description {self.description}"
+
 class MessageList(db.Model):
 
     __tablename__ = 'messagelist'
@@ -63,4 +66,7 @@ class MessageList(db.Model):
             'interval': self.interval,
             'file': self.file
         }
+
+    def __repr__(self):
+        return f"Title {self.title}, Text {self.text}, Interval {self.interval}, File {self.file}"
 

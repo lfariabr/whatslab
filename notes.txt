@@ -64,21 +64,41 @@ deploy github
 componente cadastrar telefones no frontend
 deploy github
 
+
+29/09
+- organizar disparo das mensagens de acordo com as regras + tokens
+- criar def get_message e printar query
+- fazer def get_message retornar um dicionário
+- encaixar a mensagem dentro do data_wrestling
+- enviar token phone number a partir do UserPhone
+- encaixar o token do phone number dentro do data_wrestling
+- encaixar o token e a Mensagem no Log de envios
+- review today's updates
+
 _________________
 backlog python wsgi.py
 _________________
 
 NEXT
+- deploy today's updates
+- incluir no histórico o número do phone_sender ao invés do phone_sender_id
 
-organizar disparo das mensagens de acordo com cadastro
-permitir subir arquivos no messageForms
+- permitir subir arquivos no messageForms
+- api permitir alterar/excluir leads
+- protect api access
+- integrar supabase
 
-protect api access
-integrar supabase
+Samir:
+- está SAFE enviar o token desta forma? na requisicao
+- ele vê problema em rodar a query diariamente? 30 pra frente e 30 pra trás
+- como fazer pra resolver a task de enviar multiplos senders?
+- próximos passos rodar online, sem ser local?
+
+
 
 implementar send_message_with_file
-ajustar menus home core
 incluir stripe
+metodo pra fazer fup dentro da minha classe?
 
 deeper integration pro-corpo crm
 - fix the weird thing "phone": null on graphql query

@@ -33,9 +33,17 @@ class MessageLog(db.Model):
     date_sent = db.Column(db.DateTime, default=datetime.utcnow)  # Data de envio
     status = db.Column(db.String(50))  # e.g., 'sent', 'failed'
 
-    def __init__(self, message_id, sender_phone_id, source, lead_phone_id, status):
+    message_text = db.Column(db.String(256))  # Campo para armazenar o texto da mensagem
+
+
+    def __init__(self, message_id, sender_phone_id, source, lead_phone_id, status, message_text=None):
         self.message_id = message_id
         self.sender_phone_id = sender_phone_id
         self.source = source
         self.lead_phone_id = lead_phone_id
         self.status = status
+        self.message_text = message_text
+    
+
+    def __repr__(self):
+        return f"MessageLog {self.message_text}, SenderPhone {self.sender_phone_id}, Source {self.source}, LeadPhone {self.lead_phone_id}, Status {self.status}"
