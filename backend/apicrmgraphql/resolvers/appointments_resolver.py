@@ -136,3 +136,6 @@ def filter_and_clean_appointments(appointments):
             appointment['telephones'] = []
 
     return appointments_filtered
+
+def appointments_to_check(filter_and_clean_appointments):
+    pass

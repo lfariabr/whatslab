@@ -75,32 +75,46 @@ deploy github
 - encaixar o token e a Mensagem no Log de envios
 - review today's updates
 
+30/09
+- review updates made on 29/09
+- readme file
+- deploy updates
+- test "live" environment
+- incluir no histórico o número do phone_sender
+- api permitir alterar/excluir leads
+
+01/10
+- Ajuste no log, passando corretamente:
+- ID: 5, LeadPhone: 11963546222, Message ID: botoxd1, 
+- Status: sent, Sender PhoneNb: 11988446710, 
+- Date Sent: 2024-10-01 16:28:56.213837
+- conferir o  Message Log counter do datawrestler pois nao está me contando... 
+
 _________________
+
 backlog python wsgi.py
-_________________
 
 NEXT
-- deploy today's updates
-- incluir no histórico o número do phone_sender ao invés do phone_sender_id
+- permitir subir arquivos no messageForms (resolvers social + resolvers datawrestler)
+- Remover fetch leads e fetch appointments do data wrestler
 
-- permitir subir arquivos no messageForms
-- api permitir alterar/excluir leads
+- criar regra no datawrestler upload leads graphQL
 - protect api access
+- implementar send_message_with_file
 - integrar supabase
 
 Samir:
-- está SAFE enviar o token desta forma? na requisicao
-- ele vê problema em rodar a query diariamente? 30 pra frente e 30 pra trás
-- como fazer pra resolver a task de enviar multiplos senders?
+- como fazer pra resolver a task de enviar multiplos senders? 
+    UNIDADE? E FALTA/PÓS-VENDAS que são "GLOBAIS"? talvez um check "sort" e randomizar... 
+    ou talvez fixo, pelo numero de entrada do contato
+    Mostrar solucao do NPS
+- está seguro enviar o token desta forma? na requisicao
 - próximos passos rodar online, sem ser local?
+- vê problema em rodar a query diariamente? 30 pra frente e 30 pra trás
 
-
-
-implementar send_message_with_file
 incluir stripe
 metodo pra fazer fup dentro da minha classe?
 
 deeper integration pro-corpo crm
-- fix the weird thing "phone": null on graphql query
-- POST to crmgrahql paid media/leadLPL to CRM (?) temp_lead
+- POST to crmgrahql paid media/leadLP to CRM (?) temp_lead
 - POST to crmgraphql follow_up comments (pos-vendas)

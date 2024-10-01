@@ -15,6 +15,7 @@ leadgen_blueprint = Blueprint('leadgen', __name__)
 
 @leadgen_blueprint.route('/test_flash', methods=['GET'])
 def test_flash():
+    
     flash('Mensagem de teste')
     return redirect(url_for('leadgen.botox'))
 
@@ -116,8 +117,7 @@ def upload():
 
     return render_template('core/upload.html')
 
-#### CHECKING LEADS UPLOADED
-
+#### CHECKING WHATSAPP LEADS
 @leadgen_blueprint.route('/leads_whatsapp', methods=['GET'])
 @login_required 
 def view_leads_whatsapp():
@@ -127,3 +127,49 @@ def view_leads_whatsapp():
         # Log the error, inform the user, or return a friendly error message
         return "Oh dear, the time machine broke. We've got dates flying all over the place!", 500
     return render_template('core/view_leads.html', leads=leads)
+
+#### EDITING WHATSAPP LEADS
+@leadgen_blueprint.route('/edit_leads/<int:lead_id>', methods=['GET', 'POST'])
+@login_required
+def edit_leads(lead_id):
+    lead = LeadWhatsapp.query.get_or_404(lead_id)
+    form = LeadWhatsappForm(obj=lead)
+    
+    if form.validate_on_submit():
+        # Atualize os campos diretamente
+        lead.name = form.name.data
+        lead.phone = form.phone.data
+        lead.tag = form.tag.data
+        lead.source = form.source.data
+
+        # Capturar a data do campo de data e definir hora como NOW
+        if form.created_date.data:
+            try:
+                # Apenas a data fornecida, adicionando a hora atual
+                selected_date = datetime.strptime(form.created_date.data, '%Y-%m-%d')
+                lead.created_date = datetime.combine(selected_date, datetime.now().time())
+            except ValueError:
+                flash('Data inválida. Use o formato do seletor de data.')
+                return render_template('core/edit_leads.html', form=form, lead=lead)
+        else:
+            lead.created_date = datetime.now()  # Caso o usuário não insira nada
+
+        try:
+            db.session.commit()
+            flash('Lead editado com sucesso!')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao editar o lead: {str(e)}')
+        return redirect(url_for('leadgen.view_leads_whatsapp'))
+    
+    return render_template('core/edit_leads.html', form=form, lead=lead)
+
+#### EXCLUDING WHATSAPP LEADS
+@leadgen_blueprint.route('/delete_leads/<int:lead_id>', methods=['POST'])
+@login_required
+def delete_leads(lead_id):
+    lead = LeadWhatsapp.query.get_or_404(lead_id)
+    db.session.delete(lead)
+    db.session.commit()
+    flash('Lead excluído com sucesso!')
+    return redirect(url_for('leadgen.view_leads_whatsapp'))

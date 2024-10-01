@@ -8,7 +8,7 @@ from backend.config import db, app
 from backend.users.models import UserPhone
 from backend.leadgen.models import LeadLandingPage, LeadWhatsapp
 from backend.apisocialhub.models import MessageLog, MessageList
-from backend.apisocialhub.resolvers import message_handler, send_message
+from backend.apisocialhub.resolvers import send_message
 from backend.apicrmgraphql.resolvers.appointments_resolver import fetch_appointments, filter_and_clean_appointments
 from backend.apicrmgraphql.resolvers.leads_resolver import fetch_all_leads, filter_and_clean_leads
 
@@ -31,12 +31,19 @@ def get_leads_whatsapp():
     # return LeadWhatsapp.query.all()
 
 # Depois fazer o mesmo para o LeadLandingPage
+# def count_sent_messages_to_lead_phone():
+#     return db.session.query(
+#         LeadWhatsapp.phone, db.func.count(MessageLog.id)
+#     ).join(
+#         MessageLog, LeadWhatsapp.id == MessageLog.lead_phone_id
+#     ).group_by(LeadWhatsapp.phone).all()
+
 def count_sent_messages_to_lead_phone():
     return db.session.query(
-        LeadWhatsapp.phone, db.func.count(MessageLog.id)
-    ).join(
-        MessageLog, LeadWhatsapp.id == MessageLog.lead_phone_id
-    ).group_by(LeadWhatsapp.phone).all()
+        MessageLog.lead_phone_number, db.func.count(MessageLog.id)
+    ).group_by(MessageLog.lead_phone_number).all()
+
+    # print(result)
 
 def get_appointments(start_date, end_date):
     return fetch_appointments(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
@@ -73,10 +80,11 @@ def get_phone_token():
     for phone in phone_list:
         phones_dic[phone.phone_number] = {
             'id': phone.id, 
+            'phone_number': phone.phone_number,
             'phone_token': phone.phone_token, 
-            'description': phone.description
+            'phone_description': phone.phone_description
         }
-    print("Phones Dictionary:", phones_dic)  # Debugging print
+    # print("Phones Dictionary:", phones_dic)  # Debugging print
     return phones_dic
 
     ## TESTES....
@@ -170,6 +178,7 @@ def run_data_wrestling():
             # Fetching appropriate phone number that is sending the message
             # Using the first sender phone in the dictionary
             sender_phone_data = list(phones_dic.values())[0]  
+            
             ###### TASK #######
             # Here we can add more logic to handle multiple sender phones 
             # Ativo Botox/Ativo Preenchimento/Falta/Pós-Vendas/NPS...
@@ -187,20 +196,27 @@ def run_data_wrestling():
             
             # Handling response and logging
             if status_envio:
+                lead = db.session.query(LeadWhatsapp).filter_by(phone=cliente['phone']).first()
                 print(f"{message_key} enviada para: {phone}")
                 log = MessageLog(
-                    sender_phone_id=sender_phone_data['id'], 
+                    sender_phone_id=sender_phone_data['id'],
+                    sender_phone_number=sender_phone_data['phone_number'],  # Agora registrando o número
                     source="Whatsapp",
-                    lead_phone_id=cliente['phone'],
+                    lead_phone_id=lead.id,
+                    lead_phone_number=cliente['phone'],
                     status="sent",
                     message_id=message_key,  # Add this if it's the message ID
-                    message_text=mensagem
+                    message_text=mensagem,
+                    date_sent=datetime.now()
                 )
                 db.session.add(log)
                 db.session.commit()
+                
 def view_logs():
     logs = MessageLog.query.all()
-    print(logs)
+    for log in logs:
+        print(f"ID: {log.lead_phone_id}, LeadPhone: {log.lead_phone_number}, Message ID: {log.message_id}, Status: {log.status}, Sender PhoneNb: {log.sender_phone_number}, Date Sent: {log.date_sent}")
+    # print(logs)
 
 # Execute only if we call directly from resolvers.py
 if __name__ == "__main__":

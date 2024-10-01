@@ -16,6 +16,26 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from backend.main import app, db
 from backend.leadgen.models import LeadWhatsapp
 
+# def create_lead(name, phone, tag, source='Whatsapp', created_date=None):
+#     with app.app_context():
+#         try:
+#             new_lead = LeadWhatsapp(
+#                 name=name,
+#                 phone=phone,
+#                 tag=tag,
+#                 source=source,
+#                 created_date=created_date or datetime.now()
+#             )
+#             db.session.add(new_lead)
+#             db.session.commit()
+#             print(f"Lead created successfully with name: {name}")
+#             return new_lead
+#         except Exception as e:
+#             db.session.rollback()
+#             print(f"Failed to create lead. Error: {e}")
+#         finally:
+#             db.session.close()
+
 def create_lead(name, phone, tag, source='Whatsapp', created_date=None):
     with app.app_context():
         try:
@@ -27,8 +47,10 @@ def create_lead(name, phone, tag, source='Whatsapp', created_date=None):
                 created_date=created_date or datetime.now()
             )
             db.session.add(new_lead)
-            db.session.commit()
-            print(f"Lead created successfully with name: {name}")
+            db.session.flush()  # Garante que o ID seja gerado imediatamente
+            lead_id = new_lead.id  # Armazenar o ID antes de fechar a sessão
+            db.session.commit()  # Commit agora
+            print(f"Lead created successfully with name: {name}, ID: {lead_id}")
             return new_lead
         except Exception as e:
             db.session.rollback()

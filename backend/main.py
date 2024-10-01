@@ -55,7 +55,7 @@ def not_found(error):
 # SCHEDULER SETUP
 # ------------------------------
 from .datawrestler.routes import run_datawrestler
-from .datawrestler.resolvers import run_data_wrestling, get_leads_whatsapp, data_wrestling, get_message, get_phone_token, view_logs
+from .datawrestler.resolvers import run_data_wrestling, get_leads_whatsapp, data_wrestling, get_message, get_phone_token, view_logs, count_sent_messages_to_lead_phone
 
 # Função que agenda o datawrestler para rodar automaticamente
 def schedule_datawrestler():
