@@ -87,7 +87,7 @@ def new_phone():
         phone = UserPhone(user_id=current_user.id,
                           phone_number=form.phone_number.data,
                           phone_token=form.phone_token.data, 
-                          description=form.description.data)
+                          phone_description=form.phone_description.data)
         
         db.session.add(phone)
         db.session.commit()
@@ -113,7 +113,7 @@ def edit_phone(id):
     if form.validate_on_submit():
         phone.phone_number = form.phone_number.data
         phone.phone_token = form.phone_token.data
-        phone.description = form.description.data
+        phone.phone_description = form.phone_description.data
         db.session.commit()
         flash('Telefone atualizado com sucesso!')
         return redirect(url_for('core.phone_list'))

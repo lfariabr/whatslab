@@ -43,7 +43,7 @@ class UserPhone(db.Model):
         self.phone_number = phone_number
         self.phone_token = phone_token
         self.phone_description = phone_description  # Novo campo no init
-
+    
     def __repr__(self):
         return f"Phone {self.phone_number}, Token {self.phone_token}, Phone_description {self.phone_description}"
 

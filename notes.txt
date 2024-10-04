@@ -64,7 +64,6 @@ deploy github
 componente cadastrar telefones no frontend
 deploy github
 
-
 29/09
 - organizar disparo das mensagens de acordo com as regras + tokens
 - criar def get_message e printar query
@@ -90,30 +89,50 @@ deploy github
 - Date Sent: 2024-10-01 16:28:56.213837
 - conferir o  Message Log counter do datawrestler pois nao está me contando... 
 
+02/10 papo Samir
+- está seguro enviar o token desta forma? na requisicao - SIM
+- vê problema em rodar a query diariamente? 30 pra frente e 30 pra trás - NAO, SEGUIR
+- próximos passos rodar online, sem ser local? montamos checklist
+
+03/10 
+- implementar send_message_with_file e cherry pick_message
+
 _________________
 
 backlog python wsgi.py
 
-NEXT
-- permitir subir arquivos no messageForms (resolvers social + resolvers datawrestler)
-- Remover fetch leads e fetch appointments do data wrestler
+WEEKEND
+- subir arquivos no messageForms e fazer dispará-los
+- testar send_message_with_file
+- resolver a task de enviar multiplos senders? 
+- importar a base... pensar em como estrutura SUPABASE / MYSQL / FIREBASE
 
-- criar regra no datawrestler upload leads graphQL
+- criar regra no datawrestler upload leads graphQL (100% whatsapp primeiro)
 - protect api access
-- implementar send_message_with_file
 - integrar supabase
 
-Samir:
-- como fazer pra resolver a task de enviar multiplos senders? 
-    UNIDADE? E FALTA/PÓS-VENDAS que são "GLOBAIS"? talvez um check "sort" e randomizar... 
-    ou talvez fixo, pelo numero de entrada do contato
-    Mostrar solucao do NPS
-- está seguro enviar o token desta forma? na requisicao
-- próximos passos rodar online, sem ser local?
-- vê problema em rodar a query diariamente? 30 pra frente e 30 pra trás
+Mapear estrutura final
+- banco de dados
+- http://127.0.0.1:5000 (5000 = porta firewall - para coordenar entrada/saída)
+    80http e 443https - frontend do site (procorpo.com.br)
+    apache / nginx (webserver) 
+- administra origem da sessão do user
+- faz limpeza da URL (evitar injection, parâmetros)
+- requirements dentro do ambiente
+- frontend + python (não precisa de infra separada: monolito)
+- recebimento de arquivos? (n/a pois nao temos upload)
+- limit de upload (definir)
+- certificado (lets encrypt) para rodar https
+    http -> texto da req direto (listener requisicoes no roteador)
+    https -> junto da resposta do site, versão publica do certificado (no navegador)
+    os dados sao criptografados com chave publica (chave privada no servidor transforma)
+- digital ocean
+- domínio
+
+api: php laravel api geral
+fila: php artisan qeue work
 
 incluir stripe
-metodo pra fazer fup dentro da minha classe?
 
 deeper integration pro-corpo crm
 - POST to crmgrahql paid media/leadLP to CRM (?) temp_lead

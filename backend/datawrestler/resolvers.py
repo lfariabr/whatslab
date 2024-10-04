@@ -8,7 +8,7 @@ from backend.config import db, app
 from backend.users.models import UserPhone
 from backend.leadgen.models import LeadLandingPage, LeadWhatsapp
 from backend.apisocialhub.models import MessageLog, MessageList
-from backend.apisocialhub.resolvers import send_message
+from backend.apisocialhub.resolvers import send_message, send_message_with_file, cherry_pick_message
 from backend.apicrmgraphql.resolvers.appointments_resolver import fetch_appointments, filter_and_clean_appointments
 from backend.apicrmgraphql.resolvers.leads_resolver import fetch_all_leads, filter_and_clean_leads
 
@@ -28,22 +28,11 @@ def get_leads_whatsapp():
     leads = LeadWhatsapp.query.all()
     print(f"Retrieved {len(leads)} leads from WhatsApp.")
     return leads
-    # return LeadWhatsapp.query.all()
-
-# Depois fazer o mesmo para o LeadLandingPage
-# def count_sent_messages_to_lead_phone():
-#     return db.session.query(
-#         LeadWhatsapp.phone, db.func.count(MessageLog.id)
-#     ).join(
-#         MessageLog, LeadWhatsapp.id == MessageLog.lead_phone_id
-#     ).group_by(LeadWhatsapp.phone).all()
 
 def count_sent_messages_to_lead_phone():
     return db.session.query(
         MessageLog.lead_phone_number, db.func.count(MessageLog.id)
     ).group_by(MessageLog.lead_phone_number).all()
-
-    # print(result)
 
 def get_appointments(start_date, end_date):
     return fetch_appointments(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
@@ -73,6 +62,7 @@ def get_message():
 
 def get_phone_token():
     # Creating an empty dic to be filled upon a query
+    
     phones_dic = {}
     phone_list = UserPhone.query.all()
 
@@ -100,6 +90,8 @@ def data_wrestling(leads_landing, leads_whatsapp, appointments, count_messages_b
     leads_df = []
     for lead in df_leads_receive_message:
         phone = lead.phone.strip()
+        # enfiar no df_leads_receive_message
+        # qual é o token
         sent_message_count = sent_messages_phones.get(phone, 0)
         has_appointment = phone in appointment_phones
         has_lead = phone in leads_phones
@@ -156,6 +148,8 @@ def run_data_wrestling():
         source = cliente['source']
         has_appointment = cliente['has_appointment']
         has_lead = cliente['has_lead']
+        # Flag - check dic phones to match token
+
         ####### TASK ########
         # Integrar este contador acima com o contador cadastrado pelo UserPhone
 
@@ -175,26 +169,31 @@ def run_data_wrestling():
                 print(f"Erro ao buscar mensagem: {message_key}")
                 continue
             
-            # Fetching appropriate phone number that is sending the message
             # Using the first sender phone in the dictionary
             sender_phone_data = list(phones_dic.values())[0]  
-            
+            # Fetching appropriate phone token
+            api_token = sender_phone_data.get("phone_token", None)
+
             ###### TASK #######
             # Here we can add more logic to handle multiple sender phones 
             # Ativo Botox/Ativo Preenchimento/Falta/Pós-Vendas/NPS...
 
-            # Fetching appropriate phone token
-            api_token = sender_phone_data.get("phone_token", None)
-
             if not api_token:
                 print(f"Erro ao buscar phone_token for sender: {sender_phone_data}")
                 continue
-
-            # Sending the message
-            response = send_message(phone, mensagem, api_token)
-            status_envio = response.get("success", False)
             
+            ## Sending the message - v1
+            # response = send_message(phone, mensagem, api_token)
+            
+            ## Send the message with cherry pick update
+            if file:
+                response = cherry_pick_message(phone, mensagem, api_token, file)
+            else:
+                response = cherry_pick_message(phone, mensagem, api_token)
+
             # Handling response and logging
+            status_envio = response.get("success", False)
+                        
             if status_envio:
                 lead = db.session.query(LeadWhatsapp).filter_by(phone=cliente['phone']).first()
                 print(f"{message_key} enviada para: {phone}")
@@ -209,8 +208,12 @@ def run_data_wrestling():
                     message_text=mensagem,
                     date_sent=datetime.now()
                 )
-                db.session.add(log)
-                db.session.commit()
+                try:
+                    db.session.add(log)
+                    db.session.commit()
+                except Exception as e:
+                    db.session.rollback()
+                    print(f"Failed to log message: {str(e)}")
                 
 def view_logs():
     logs = MessageLog.query.all()
