@@ -1,9 +1,10 @@
-from flask import Blueprint, render_template, flash, redirect, url_for
+from flask import Blueprint, render_template, flash, redirect, url_for, current_app, send_from_directory
 from flask_login import login_required, current_user
 from backend.config import db
 from backend.users.models import MessageList, UserPhone
 from backend.users.forms import MessageForm, UserPhoneForm
-
+from werkzeug.utils import secure_filename
+import os
 
 core_blueprint = Blueprint('core', __name__)
 
@@ -19,12 +20,25 @@ def index():
 def new_message():
     form = MessageForm()
     if form.validate_on_submit():
+        if form.file.data and hasattr(form.file.data, 'filename'):
+            # Defining file secure name
+            filename = secure_filename(form.file.data.filename)
+
+            # Complete file path where it's gonna be saved
+            file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+
+            # Saving file at server
+            form.file.data.save(file_path)
+        
+        else:   
+            file_path = None
+
         # Create a new message record
         message = MessageList(
             title=form.title.data, 
             text=form.text.data, 
             interval=form.interval.data, 
-            file=form.file.data
+            file=filename # form.file.data
         )
 
         # Add and commit to the database
@@ -56,17 +70,42 @@ def message_list():
 def edit_message(id):
     message = MessageList.query.get_or_404(id)
     form = MessageForm(obj=message)
+
     if form.validate_on_submit():
         message.title = form.title.data
         message.text = form.text.data
         message.interval = form.interval.data
-        message.file = form.file.data
+
+        # Verificar se um novo arquivo foi enviado
+        if form.file.data and hasattr(form.file.data, 'filename'):
+            # Definir o nome seguro do arquivo
+            filename = secure_filename(form.file.data.filename)
+            # Caminho completo do arquivo onde ele será salvo
+            file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+
+            if not os.path.exists(current_app.config['UPLOAD_FOLDER']):
+                os.makedirs(current_app.config['UPLOAD_FOLDER'])
+
+            # Salvar o arquivo no servidor
+            form.file.data.save(file_path)
+            # Atualizar o caminho do arquivo na mensagem
+            message.file = filename
+        else:
+            # Se nenhum novo arquivo foi enviado, manter o arquivo existente
+            message.file = message.file  # Mantém o caminho do arquivo existente
+
+        # Salvar as alterações no banco de dados
         db.session.commit()
         flash('Mensagem editada com sucesso!')
         return redirect(url_for('core.message_list'))
     
     # Pass the `message` object to the template
     return render_template('core/new_message.html', form=form, message=message)
+
+@core_blueprint.route('/uploads/<filename>')
+@login_required
+def uploaded_file(filename):
+    return send_from_directory(current_app.config['UPLOAD_FOLDER'], filename)
 
 # Route for Deleting a Message
 @core_blueprint.route('/delete_message/<int:id>', methods=['POST'])

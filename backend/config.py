@@ -16,10 +16,12 @@ CORS(app)
 app.instance_path = '/tmp/instance'
 
 load_dotenv()
+# Sending Message with File
+app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'users', 'messages', 'uploads')
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///mydatabase.db'
-app.config['UPLOAD_FOLDER'] = '/uploads'
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 # Processes (Ex: trigger)
 # Foreign Key limitations on SQLite
 # Postgres SQL 

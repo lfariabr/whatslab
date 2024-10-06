@@ -29,7 +29,13 @@
                             <td>{{ message.title }}</td>
                             <td>{{ message.text }}</td>
                             <td>{{ message.interval }}</td>
-                            <td>{{ message.file }}</td>
+                            <td>
+                                {% if message.file %}
+                                    <a href="{{ url_for('core.uploaded_file', filename=message.file) }}" target="_blank">{{ message.file }}</a>
+                                {% else %}
+                                    Nenhum arquivo
+                                {% endif %}
+                            </td>
                             <td>
                                 <a href="{{ url_for('core.edit_message', id=message.id) }}" class="btn btn-sm btn-warning">Editar</a>
                                 <form action="{{ url_for('core.delete_message', id=message.id) }}" method="POST" style="display:inline;">

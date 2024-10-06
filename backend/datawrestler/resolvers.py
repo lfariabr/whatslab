@@ -156,10 +156,15 @@ def run_data_wrestling():
         if not has_appointment and not has_lead and source == "Whatsapp":
 
             # Defining message based on conditions
-            if contador == 0:
+            if contador == 0: # era 0
                 message_key = "botoxd1"
-            elif contador == 1:
+            elif contador == 1: #  era 1
                 message_key = "botoxd2"
+            elif contador == 2: # era 2
+                message_key = "botoxd3"
+            else:
+                print(f"Contador {contador} não mapeado para uma mensagem.")
+                continue
 
             # Fetching appropriate message and file
             mensagem = messages_dic.get(message_key, {}).get("text", None)

@@ -96,14 +96,29 @@ deploy github
 
 03/10 
 - implementar send_message_with_file e cherry pick_message
+- cherry pick deploy
+- subir arquivos no messageForms <config UPLOAD_FOLDER>
+- salvando arquivos no servidor e ajustando o nome do arquivos
+- rota para servir arquivos da pasta de upload
+- exibimos no frontend o nome do arquivo e permitimos o download
+
+04/10
+- testar send_message_with_file e send_message without file cases
+- test send message without file and worked with changes resolvers.apisocialhub
+
+05/10
+- resolver o content-Type: multipart/form-data 
+- testar send_message_with_file e send_message without file cases
+
+06/10
+- commit changes
+- prepare base
 
 _________________
 
 backlog python wsgi.py
 
 WEEKEND
-- subir arquivos no messageForms e fazer dispará-los
-- testar send_message_with_file
 - resolver a task de enviar multiplos senders? 
 - importar a base... pensar em como estrutura SUPABASE / MYSQL / FIREBASE
 
