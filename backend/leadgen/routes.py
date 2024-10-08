@@ -6,6 +6,7 @@ import pandas as pd
 from werkzeug.utils import secure_filename
 from .data_cleaner import process_csv_files
 from datetime import datetime
+import logging
 
 # Absolute imports
 from backend.leadgen.models import LeadLandingPage, LeadWhatsapp
@@ -59,20 +60,24 @@ def allowed_file(filename):
 
 @leadgen_blueprint.route('/upload_csv', methods=['GET', 'POST'])
 def upload():
+    logging.info("Entrou na rota de upload CSV")
     if request.method == 'POST':
         # Capturando a data do formulário. Se estiver vazia, define como data atual.
         date_str = request.form.get('date')
         if not date_str:
             created_date = datetime.now()  # Mantemos como objeto datetime
+    
         else:
             try:
                 created_date = datetime.strptime(date_str, '%Y-%m-%d')  # Convertendo para datetime
             except ValueError:
                 flash('Formato de data inválido. Use o formato YYYY-MM-DD.')
+                logging.error("Formato de data inválido")
                 return redirect(url_for('leadgen.upload'))
-        
+        logging.info(f"Data recebida: {date_str}")    
         botox_file = request.files.get('botox_file')
         preenchimento_file = request.files.get('preenchimento_file')
+        logging.info(f"Arquivos recebidos - Botox: {botox_file}, Preenchimento: {preenchimento_file}")
 
         if not botox_file and not preenchimento_file:
             flash('Nenhum arquivo selecionado')
@@ -99,19 +104,28 @@ def upload():
 
             # Iterando sobre as linhas do DataFrame e salvando no banco
             for index, row in df_leads_whatsapp.iterrows():
-                # Definindo a tag com base no arquivo enviado
-                tag = 'Preenchimento' if 'preenchimento' in row['filename'] else 'Botox'
-                lead = LeadWhatsapp(
-                    name=row['Nome'],
-                    phone=row['Whatsapp'],
-                    created_date=created_date,  # Usando a data selecionada no front-end
-                    tag=tag,
-                    source='Whatsapp'
-                )
-                db.session.add(lead)
+                try:
+                    name = str(row['Nome'])
+                    phone = str(row['Whatsapp'])
 
-            db.session.commit()
-            flash('Leads adicionados ao banco de dados com sucesso!')
+                    if not name or not phone:
+                        continue
+                    # Definindo a tag com base no arquivo enviado
+                    tag = 'Preenchimento' if 'preenchimento' in row['filename'] else 'Botox'
+                    lead = LeadWhatsapp(
+                        name=row['Nome'],
+                        phone=row['Whatsapp'],
+                        created_date=created_date,  # Usando a data selecionada no front-end
+                        tag=tag,
+                        source='Whatsapp'
+                    )
+                    db.session.add(lead)
+                    db.session.commit()
+                    flash('Leads adicionados ao banco de dados com sucesso!')
+                
+                except Exception as e:
+                    print(f"Erro ao adicionar lead: {e}, Linha: {index}")
+                    continue
 
         return redirect(url_for('leadgen.view_leads_whatsapp'))
 

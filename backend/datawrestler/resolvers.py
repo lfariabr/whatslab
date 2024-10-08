@@ -99,6 +99,8 @@ def data_wrestling(leads_landing, leads_whatsapp, appointments, count_messages_b
             'phone': phone,
             'created_date': lead.created_date,
             'source': lead.source,
+            'name': lead.name,
+            'tag': lead.tag,
             'sent_message_count': sent_message_count,
             'has_appointment': has_appointment,
             'has_lead': has_lead
@@ -111,8 +113,8 @@ def run_data_wrestling():
     print("Executing...")
     
     # Initial data
-    start_date = datetime.now() - timedelta(days=0)
-    end_date = datetime.now() + timedelta(days=0)
+    start_date = datetime(2024, 10, 1) # datetime.now() - timedelta(days=0)
+    end_date = datetime(2024, 10, 1) # datetime.now() + timedelta(days=0)
     today = datetime.now().strftime("%d/%m/%Y")
 
     load_dotenv()
@@ -148,19 +150,19 @@ def run_data_wrestling():
         source = cliente['source']
         has_appointment = cliente['has_appointment']
         has_lead = cliente['has_lead']
+        
         # Flag - check dic phones to match token
+        name = cliente['name']
+        tag = cliente['tag']
 
-        ####### TASK ########
-        # Integrar este contador acima com o contador cadastrado pelo UserPhone
-
-        if not has_appointment and not has_lead and source == "Whatsapp":
+        if not has_appointment and not has_lead and source == "Whatsapp" and tag == "Botox":
 
             # Defining message based on conditions
-            if contador == 0: # era 0
+            if contador == 0:
                 message_key = "botoxd1"
-            elif contador == 1: #  era 1
+            elif contador == 1:
                 message_key = "botoxd2"
-            elif contador == 2: # era 2
+            elif contador == 2:
                 message_key = "botoxd3"
             else:
                 print(f"Contador {contador} não mapeado para uma mensagem.")
@@ -175,20 +177,24 @@ def run_data_wrestling():
                 continue
             
             # Using the first sender phone in the dictionary
-            sender_phone_data = list(phones_dic.values())[0]  
+            # sender_phone_data = list(phones_dic.values())[0]  
+
+            ###### TASK ######
+            # New version using the phone description to grab token
+            # Here we can add more logic to handle multiple sender phones 
+            # Ativo Botox/Ativo Preenchimento/Falta/Pós-Vendas/NPS...
+            sender_phone_data = next(
+                (data for data in phones_dic.values() if data.get('phone_description') == "Botox"), 
+                None
+            )
             # Fetching appropriate phone token
             api_token = sender_phone_data.get("phone_token", None)
 
-            ###### TASK #######
-            # Here we can add more logic to handle multiple sender phones 
-            # Ativo Botox/Ativo Preenchimento/Falta/Pós-Vendas/NPS...
+            
 
             if not api_token:
                 print(f"Erro ao buscar phone_token for sender: {sender_phone_data}")
                 continue
-            
-            ## Sending the message - v1
-            # response = send_message(phone, mensagem, api_token)
             
             ## Send the message with cherry pick update
             if file:
@@ -209,7 +215,7 @@ def run_data_wrestling():
                     lead_phone_id=lead.id,
                     lead_phone_number=cliente['phone'],
                     status="sent",
-                    message_id=message_key,  # Add this if it's the message ID
+                    message_title=message_key,  # Add this if it's the message ID
                     message_text=mensagem,
                     date_sent=datetime.now()
                 )

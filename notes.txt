@@ -97,7 +97,7 @@ deploy github
 03/10 
 - implementar send_message_with_file e cherry pick_message
 - cherry pick deploy
-- subir arquivos no messageForms <config UPLOAD_FOLDER>
+- subir arquivos no messageForms <config UPLOAD_FOLDER> (user>messages>uploads)
 - salvando arquivos no servidor e ajustando o nome do arquivos
 - rota para servir arquivos da pasta de upload
 - exibimos no frontend o nome do arquivo e permitimos o download
@@ -105,6 +105,7 @@ deploy github
 04/10
 - testar send_message_with_file e send_message without file cases
 - test send message without file and worked with changes resolvers.apisocialhub
+- delete_message_logs.py
 
 05/10
 - resolver o content-Type: multipart/form-data 
@@ -112,22 +113,36 @@ deploy github
 
 06/10
 - commit changes
-- prepare base
+- prepare research to use base
+- https://www.postgresql.org/download/
+
+07/10
+- pensar em como estrutura SUPABASE / POSTGRESQL
+- fomos de PostgreSQL
+- flask db stamp head -> synch migrations
+- rever estrutura supabase anterior
+
+08/10
+- resolver upload de arquivos / mensagens
+- ter as opcoes supabase / sqlite > flask db stamp head
+- fazer mais um teste configurando msg + msg + video e msg +foto 
+- interfce para visualizar o banco de dados 
+- conseguir intercalar entre supabase/sqlite
+- aprender a mexer no supabase
+- multiplos senders: botox/preenchimento
 
 _________________
+python wsgi.py
+BACKLOG
 
-backlog python wsgi.py
-
-WEEKEND
-- resolver a task de enviar multiplos senders? 
-- importar a base... pensar em como estrutura SUPABASE / MYSQL / FIREBASE
-
+- lidar com lentidão do banco
 - criar regra no datawrestler upload leads graphQL (100% whatsapp primeiro)
 - protect api access
-- integrar supabase
 
 Mapear estrutura final
 - banco de dados
+- domínio
+- digital ocean
 - http://127.0.0.1:5000 (5000 = porta firewall - para coordenar entrada/saída)
     80http e 443https - frontend do site (procorpo.com.br)
     apache / nginx (webserver) 
@@ -141,8 +156,6 @@ Mapear estrutura final
     http -> texto da req direto (listener requisicoes no roteador)
     https -> junto da resposta do site, versão publica do certificado (no navegador)
     os dados sao criptografados com chave publica (chave privada no servidor transforma)
-- digital ocean
-- domínio
 
 api: php laravel api geral
 fila: php artisan qeue work

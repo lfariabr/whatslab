@@ -19,6 +19,8 @@ def index():
 @login_required
 def new_message():
     form = MessageForm()
+    filename = None
+    
     if form.validate_on_submit():
         if form.file.data and hasattr(form.file.data, 'filename'):
             # Defining file secure name

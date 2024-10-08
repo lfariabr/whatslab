@@ -22,11 +22,14 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///mydatabase.db'
+# DATABASE_URL = 'postgresql+psycopg2://luisfaria:mypassword@localhost/my_flask_app'
+# app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 # Processes (Ex: trigger)
 # Foreign Key limitations on SQLite
 # Postgres SQL 
-
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)

@@ -18,6 +18,7 @@ class MessageLog(db.Model):
     # Relaciona com a tabela existente MessageList
     message_id = db.Column(db.Integer, db.ForeignKey('messagelist.id'))
     message = db.relationship("MessageList")
+    message_title = db.Column(db.String(64))
     
     # Relacionamento com UserPhone (disparador) para associar o envio
     sender_phone_id = db.Column(db.Integer, db.ForeignKey('userphones.id'))
@@ -38,9 +39,9 @@ class MessageLog(db.Model):
     message_text = db.Column(db.String(256))  # Campo para armazenar o texto da mensagem
 
 
-    def __init__(self, message_id, sender_phone_id, sender_phone_number, source, lead_phone_id, lead_phone_number, status, message_text=None, date_sent=datetime.utcnow()):
+    def __init__(self, message_title, sender_phone_id, sender_phone_number, source, lead_phone_id, lead_phone_number, status, message_text=None, date_sent=datetime.utcnow()):
 
-        self.message_id = message_id
+        self.message_title = message_title
         self.sender_phone_id = sender_phone_id
         self.sender_phone_number = sender_phone_number
         self.source = source
@@ -52,4 +53,4 @@ class MessageLog(db.Model):
     
 
     def __repr__(self):
-        return f"MessageLog {self.message_text}, SenderPhone {self.sender_phone_id}, SenderPhoneNb: {self.sender_phone_number}, Source {self.source}, LeadPhoneID {self.lead_phone_id}, LeadPhone {self.lead_phone_number}, Status {self.status}"
+        return f"MessageLog {self.message_text}, MessageTitle {self.message_title}, SenderPhone {self.sender_phone_id}, SenderPhoneNb: {self.sender_phone_number}, Source {self.source}, LeadPhoneID {self.lead_phone_id}, LeadPhone {self.lead_phone_number}, Status {self.status}"
