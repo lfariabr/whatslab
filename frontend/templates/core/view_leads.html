@@ -17,7 +17,11 @@
                 <th>Data de Criação</th>
                 <th>Tag</th>
                 <th>Fonte</th>
+                <th>Unidade</th>
+                <th>Região</th>
+                <th>Tags</th>
                 <th>Ações</th> <!-- Nova coluna para ações -->
+
             </tr>
         </thead>
         <tbody>
@@ -29,6 +33,9 @@
                 <td>{{ lead.created_date.strftime('%Y-%m-%d %H:%M:%S') if lead.created_date else 'Data não disponível' }}</td>
                 <td>{{ lead.tag }}</td>
                 <td>{{ lead.source }}</td>
+                <td>{{ lead.store }} </td>
+                <td>{{ lead.region }} </td>
+                <td>{{ lead.tags }} </td>
                 <td>
                     <!-- Botão de editar -->
                     <a href="{{ url_for('leadgen.edit_leads', lead_id=lead.id) }}" class="btn btn-warning btn-sm">Editar</a>

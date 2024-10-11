@@ -7,29 +7,24 @@ from flask_login import LoginManager
 from dotenv import load_dotenv
 
 app = Flask(__name__, 
-            template_folder='../frontend/templates',  # Use relative path
-            static_folder='../frontend/static')       # Use relative path
+            template_folder='../frontend/templates',
+            static_folder='../frontend/static')     
 
 CORS(app)
 
-# Vercel issue:
+# Vercel
 app.instance_path = '/tmp/instance'
 
-load_dotenv()
 # Sending Message with File
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'users', 'messages', 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
+load_dotenv()
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///mydatabase.db'
-# DATABASE_URL = 'postgresql+psycopg2://luisfaria:mypassword@localhost/my_flask_app'
-# app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL') # SSL req already at .env
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///mydatabase.db' # for local dev
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-# Processes (Ex: trigger)
-# Foreign Key limitations on SQLite
-# Postgres SQL 
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)

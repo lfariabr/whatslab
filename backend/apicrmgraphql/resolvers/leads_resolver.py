@@ -8,6 +8,7 @@ import time
 import logging
 from ..models import GraphQLClient
 from ..token_manager import graphql_api_url, graphql_api_token
+from backend.apicrmgraphql.dicts import dic_store_ident, dic_region_ident, stores, region_map
 
 client = GraphQLClient(graphql_api_url, graphql_api_token)
 logging.basicConfig(level=logging.DEBUG)
@@ -133,8 +134,6 @@ def fetch_all_leads(start_date, end_date):
     logging.debug(f"All leads collected: {all_leads}")
     return all_leads
 
-
-
 def fetch_leads(start_date, end_date):
     return fetch_all_leads(start_date, end_date)
 
@@ -167,3 +166,61 @@ def filter_and_clean_leads(leads):
     return leads_filtered
     
     # return fetch_leads(start_date, end_date)
+
+def create_lead(name, telephone, email, message, unidade, region):
+
+    source_identifier = "662bf789-d04c-4ccf-8424-26b92595060c"
+
+    region_identifier = dic_region_ident[region]
+    store_identifier = dic_store_ident[unidade]
+
+    telephone = str(telephone)
+
+    query = """
+    mutation ($data: CreateLeadInput!) {
+        createLead(
+            data: $data
+        ) {
+            email
+            name
+            message
+            region {
+                identifier
+            }
+            source {
+                identifier
+            }
+            store {
+                identifier
+            }
+            telephone
+        }
+    }
+    """
+
+    variables = {
+        "data": {
+            "email": email,
+            "message": message,
+            "name": name,
+            "regionIdentifier": region_identifier,
+            "sourceIdentifier": source_identifier,
+            "storeIdentifier": store_identifier,
+            "telephone": telephone
+        }
+    }
+
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {graphql_api_token}'
+    }
+
+    response = requests.post(graphql_api_url, json={'query': query, 'variables': variables}, headers=headers)
+    response_data = response.json()
+
+    if response.status_code == 200:
+        print("Lead created successfully:", response_data)
+    else:
+        print("Failed to create lead:", response_data)
+
+    return response_data

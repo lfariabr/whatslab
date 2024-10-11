@@ -20,7 +20,6 @@ class LeadQuery(graphene.ObjectType):
         end_date=graphene.String(required=True)
     )
 
-    
     def resolve_leads(self, info, start_date, end_date):
         leads = filter_and_clean_leads(fetch_leads(start_date, end_date))  # Certificando que a função fetch_leads é chamada e então os leads são filtrados e limpos.
         logging.debug(f"Fetched leads in resolver: {leads}")

@@ -117,16 +117,21 @@ def upload():
                         phone=row['Whatsapp'],
                         created_date=created_date,  # Usando a data selecionada no front-end
                         tag=tag,
-                        source='Whatsapp'
+                        source='Whatsapp',
+                        #store=row['Unidade'],
+                        #region=row['Região'],
+                        #tags=row['Tags']
+                        store=row.get('Unidade', 'CENTRAL'),
+                        region=row.get('Região', 'São Paulo'),
+                        tags=row.get('Tags', 'SEM TAGS')
                     )
                     db.session.add(lead)
                     db.session.commit()
-                    flash('Leads adicionados ao banco de dados com sucesso!')
                 
                 except Exception as e:
                     print(f"Erro ao adicionar lead: {e}, Linha: {index}")
                     continue
-
+        flash('Leads adicionados ao banco de dados com sucesso!')
         return redirect(url_for('leadgen.view_leads_whatsapp'))
 
     return render_template('core/upload.html')
@@ -155,6 +160,9 @@ def edit_leads(lead_id):
         lead.phone = form.phone.data
         lead.tag = form.tag.data
         lead.source = form.source.data
+        lead.store = form.store.data
+        lead.region = form.region.data
+        lead.tags = form.tags.data
 
         # Capturar a data do campo de data e definir hora como NOW
         if form.created_date.data:

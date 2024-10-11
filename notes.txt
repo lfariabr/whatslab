@@ -1,68 +1,67 @@
 18/09
-api
-core
-instance
-leadgen
-users
-frontend
+- api
+- core
+- instance
+- leadgen
+- users
+- frontend
 
 19/09
-componente apicrmgraphql
-leadgen > subidor de leads
-frontend > upload.html, view_leads.html
+- componente apicrmgraphql
+- leadgen > subidor de leads
+- frontend > upload.html, view_leads.html
 
 20/09
-home/core
-home/botox
-componente apisocialhub + graphQL
-requirements.txt
-send message - test.py
-send message - test graphiQL
+- home/core
+- home/botox
+- componente apisocialhub + graphQL
+- requirements.txt
+- send message - test.py
+- send message - test graphiQL
 
 21/09
-datawrestler_part1: GET from core, leadLP + LeadWPP to process
-datawrestler_part2: groupby sent_message
-datawrestler_part2: GET from api socialhub response of sent message
+- datawrestler_part1: GET from core, leadLP + LeadWPP to process
+- datawrestler_part2: groupby sent_message
+- datawrestler_part2: GET from api socialhub response of sent message
 Blueprint & routes datawrestler
 GraphQL datawrestler 
 datawrestler_part3: GET from crm graphql appointments
 datawrestler_part3: GET from crm graphql view_leads
 
 22/09
-datawrestler_part3 resolvers.py: include date filter
-datawrestler_part4: resolvers.py resolve leads with same date filter
-datawrestler_part5: cross with whatsapp lead to see if they're appointment or leads
-datawrestler_part6: cross it all df_receive_messages
- and send_message logs
-datawrestler_part7: app_context e 
-blueprint run-datawrestlergit fetch origin
-datawrestler_part8: apscheduler in app context
+- datawrestler_part3 resolvers.py: include date filter
+- datawrestler_part4: resolvers.py resolve leads with same date filter
+- datawrestler_part5: cross with whatsapp lead to see if they're appointment or leads
+- datawrestler_part6: cross it all df_receive_messages and send_message logs
+- datawrestler_part7: app_context e 
+- blueprint run-datawrestlergit fetch origin
+- datawrestler_part8: apscheduler in app context
 
 23/09
-organizar .env
-organizar requirements.txt
-push github
-vercel deploy & connect
-escrever tudo o que tem no banco
+- organizar .env
+- organizar requirements.txt
+- push github
+- vercel deploy & connect
+- escrever tudo o que tem no banco
 
 24/09
-Entender melhor o datarwrestler running scheduler
-Mapear o erro de certificado
-Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED
+- Entender melhor o datarwrestler running scheduler
+- Mapear o erro de certificado
+- Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED
 
 25/09
-preparar para papo com Samir
+- preparar para papo com Samir
 
 27/09
-resolver certificado disparo
+- resolver certificado disparo
 
 28/09 
-CRUD msgs componente de cadastro de mensagens (txt/foto)
-header dinamico frontend core
-ajuste das rotas para crud msgs
-deploy github
-componente cadastrar telefones no frontend
-deploy github
+- CRUD msgs componente de cadastro de mensagens (txt/foto)
+- header dinamico frontend core
+- ajuste das rotas para crud msgs
+- deploy github
+- componente cadastrar telefones no frontend
+- deploy github
 
 29/09
 - organizar disparo das mensagens de acordo com as regras + tokens
@@ -110,6 +109,7 @@ deploy github
 05/10
 - resolver o content-Type: multipart/form-data 
 - testar send_message_with_file e send_message without file cases
+- preparar estrutura final Samir
 
 06/10
 - commit changes
@@ -130,19 +130,60 @@ deploy github
 - conseguir intercalar entre supabase/sqlite
 - aprender a mexer no supabase
 - multiplos senders: botox/preenchimento
+- deploy
 
-_________________
+09/10
+- migrar CSV para o banco (leads / sent_messages)
+- create resolvers2 optimzing multiple tokens & campaigns
+- resolvers2 to deal with "dias_depois_da_conversa" + contador
+- import time and rest 10s between messages
+- adicionar um rest 10-15s cada mensagem
+- validar implementacao/lentidao do banco
+
+10/10
+- criei dicionário de regiao em dicts.py
+- adicionei a funcao create_leads no apicrmgraphql>leads_resolver
+- preparei o terreno no datawrestler
+- atualizar classe leadwhatsapp para refletir as colunas novas (store, region, tags)
+- atualizar form LeadWhatsappLandingPage com as 3 colunas novas
+- atualizar html view_leads com 3 novas colunas
+- atualizar html edit_leads com 3 colunas novas
+- atualizar edit no routes.py leadgenlp com 3 colunas novas
+- inserir no datacleaner funcoes create_store e create_region
+- resolvers2 rule to upload leads GraphQL
+- inserir no dics.py os DDDs
+- chamar estas funcoes na hora de adicionar CSV
+- chamar as funcoes para upload do lead na rota
+- inserir upload leads no datawrestler
+- brute force test contador = 4 upload lead - WORKING MOTHERFUCKER!!!
+- create function print_all_messages on delete_messages_log.py
+________________________
 python wsgi.py
 BACKLOG
+________________________
+now
+- testar o disparo botox 1,2,3,4 continue didn't work
+- testar o disparo botox 1,2,3,4 message_key = None worked!
 
-- lidar com lentidão do banco
-- criar regra no datawrestler upload leads graphQL (100% whatsapp primeiro)
+11/10
+- migrar banco para supabase
+
+this week
+- fazer primeiro disparo 100% do script botox/preenchimento
+- configurar o servidor
+- apontar DNS
+    
+comming next
 - protect api access
+- incluir stripe
+- POST to crmgraphql follow_up comments (pos-vendas)
 
 Mapear estrutura final
-- banco de dados
-- domínio
-- digital ocean
+- banco de dados: postgresql 
+- tem upload? sim... jpeg e mp4
+- domínio: konquista.com.br
+- digital ocean: lfariabr@gmail.com
+
 - http://127.0.0.1:5000 (5000 = porta firewall - para coordenar entrada/saída)
     80http e 443https - frontend do site (procorpo.com.br)
     apache / nginx (webserver) 
@@ -153,15 +194,9 @@ Mapear estrutura final
 - recebimento de arquivos? (n/a pois nao temos upload)
 - limit de upload (definir)
 - certificado (lets encrypt) para rodar https
-    http -> texto da req direto (listener requisicoes no roteador)
-    https -> junto da resposta do site, versão publica do certificado (no navegador)
-    os dados sao criptografados com chave publica (chave privada no servidor transforma)
+http -> texto da req direto (listener requisicoes no roteador)
+https -> junto da resposta do site, versão publica do certificado (no navegador)
+os dados sao criptografados com chave publica (chave privada no servidor transforma)
 
 api: php laravel api geral
 fila: php artisan qeue work
-
-incluir stripe
-
-deeper integration pro-corpo crm
-- POST to crmgrahql paid media/leadLP to CRM (?) temp_lead
-- POST to crmgraphql follow_up comments (pos-vendas)

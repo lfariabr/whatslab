@@ -45,4 +45,7 @@ class LeadWhatsappForm(FlaskForm):
     created_date = StringField('Created Date')
     tag = StringField('Tag')
     source = StringField('Source')
+    store = StringField('Store')
+    region = StringField('Region')
+    tags = StringField('Tags')
     submit = SubmitField('Submit')

@@ -28,6 +28,23 @@ with app.app_context():
             print(f"Failed to delete message logs. Error: {e}")
         finally:
             db.session.close()
+    
+    # def print_all_message_logs():        
+    #     try:
+    #         logs = MessageLog.query.all()
+
+    #         if logs:
+    #             print(f"Found {len(logs)} message logs:")
+                
+    #             for log in logs:
+    #                 print(f"ID: {log.id}, LeadPhone: {log.lead_phone_number}, Message ID: {log.message_id}, Status: {log.status}, Sender PhoneNb: {log.sender_phone_number}, Date Sent: {log.date_sent}")
+    #         else:
+    #             print("No message logs found.")
+    #     except Exception as e:
+    #         print(f"Failed to print message logs. Error: {e}")
+    #     finally:
+    #         db.session.close()
 
     if __name__ == "__main__":
         delete_all_message_logs()
+        # print_all_message_logs()
