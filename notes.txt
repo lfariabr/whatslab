@@ -163,6 +163,7 @@ datawrestler_part3: GET from crm graphql view_leads
 - testar o disparo botox 1,2,3,4 message_key = None worked and is logging
 - migrar banco para supabase
 - commit changes
+- vercel solve env variable for supabase
 
 ________________________
 python wsgi.py
@@ -170,7 +171,7 @@ BACKLOG
 ________________________
 
 now
-- vercel solve env variable for supabase
+- deal with slow database timeout
 
 this week
 - configurar o servidor
