@@ -10,6 +10,7 @@ venv/
 # Flask specific
 instance/
 *.log
+migrations/
 
 # MacOS specific
 .DS_Store
