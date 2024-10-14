@@ -53,7 +53,7 @@ class MessageList(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(64))
-    text = db.Column(db.String(256))
+    text = db.Column(db.Text)
     interval = db.Column(db.Integer) # days or hours between messages
     file = db.Column(db.String(256)) # photo, video, audio, etc
 

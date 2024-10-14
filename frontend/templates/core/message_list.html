@@ -8,6 +8,8 @@
         <!-- Add New Message Button -->
         <div class="text-right mb-4">
             <a href="{{ url_for('core.new_message') }}" class="btn btn-primary">Cadastrar Nova Mensagem</a>
+            <a href="{{ url_for('core.run_datawrestler_page') }}" class="btn btn-success">Disparar Mensagens</a>
+            <a href="{{ url_for('core.message_logs') }}" class="btn btn-info">Consultar Histórico de Mensagens</a>
         </div>
 
         <!-- Table for Listing Messages -->
@@ -27,7 +29,8 @@
                         {% for message in messages %}
                         <tr>
                             <td>{{ message.title }}</td>
-                            <td>{{ message.text }}</td>
+                            <!-- Use the nl2br filter to display newlines as <br> tags in the message text -->
+                            <td><pre class="formatted-text">{{ message.text | nl2br }}</pre></td>
                             <td>{{ message.interval }}</td>
                             <td>
                                 {% if message.file %}

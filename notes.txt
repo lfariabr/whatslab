@@ -164,31 +164,95 @@ datawrestler_part3: GET from crm graphql view_leads
 - migrar banco para supabase
 - commit changes
 - vercel solve env variable for supabase
+- deal with slow database timeout: FIXED db.create_all() on main.py
+- created SSH file to encrypt and authenticate connection between computer and SSLCertVerificationError
+- ssh replaces the need for password
+- create a droplet in digital ocean 
+- create a password
+- connect to droplet : ssh root@<157.245.216.158> 
+(env) luisfaria@Luiss-MBP _flaskv3 % ssh root@157.245.216.158  
+- add root@1... to list of known hosts
+- config do servidor Ubuntu no droplet
+    - sudo apt update && sudo apt upgrade -y
+    - instalamos o docker
+    - clonamos o repo github
+- criamos uma imagem do app em docker
+    - criamos docker-compose-yml
+    - docker build -t flask-app .
+    - docker run -d -p 5000:5000 flask-app
+- instalamos nginx
+    - sudo apt install nginx
+- configuramos nginx para redirecionar requests do dominio para a app flask
+    sudo ln -s /etc/nginx/sites-available/konquista.com.br /etc/nginx/sites-enabled/
+    sudo systemctl restart nginx
+- configuramos o DNS no registro br
+    - apontamos para o endereo do droplet (157...)
+
+12/10
+- criacao e config ssh - protocolo secure shell / devops, backend
+- config droplet usando Ubuntu (Linux) para hospedar app flask / cloud, devops, infra
+- firewall e seguranca de rede (ufw). 5000 flask e 80 nginx / security
+- install and docker container config / devops, soft engineer, infra
+- deply in docker port 5000 with nginx reverse proxy and load balancer to manage http / backend, devops, soft engineer
+- nginx reverse proxy: http > flask + http -> https / devops, infra, security
+- dns config and propag / dns, infra
+- ssl implementation / dns, infra, infosec
+- study what we did and learnt with devops/docker/infra
+
+13/10
+- http://127.0.0.1:5000/core/datawrestler
+- printar logs do run_datawrestler no frontend
+- http://127.0.0.1:5000/core/message_logs
+- exibir histórico de mensagens enviadas no frontend
+@ sudo nano /etc/nginx/sites-available/default
+limit_req_zone $binary_remote_addr zone=mylimit:10m rate=10r/s;
+- implement Rate Limiting by IP to avoid ddos
+- block malicious requests within nginx
+# Cabeçalhos de segurança
+add_header X-Frame-Options "SAMEORIGIN";
+add_header X-XSS-Protection "1; mode=block";
+add_header X-Content-Type-Options "nosniff";
+add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
+- sudo apt install fail2ban
+- logs do nginx:  tail -f /var/log/nginx/access.log /var/log/nginx/error.log
+- certbot (already implemneted 12/10)
+- UFW firewall (already implemented 12/10)
+sudo apt update && sudo apt upgrade
+
+14/10:
+- deixar bonito... datawrestler e message logs
+- inserir disparador e message logs no painel de mensagens
+- dark background core component
+- changing message type to db.text instead of db.String(256)
+- accepting "enter" character on texts 
+- update all text messages
 
 ________________________
 python wsgi.py
 BACKLOG
 ________________________
 
-now
-- deal with slow database timeout
 
-this week
-- configurar o servidor
-- apontar DNS
+to be done
+- update all file messages 
+- testar rodar botox full cycle
+- testar rodar preenchimento full cycle
+- testar rodar um período maior query leads e agd (15 dias)
+
+- preparar o primeiro disparo: leads, historico.. já dar o start por aqui!
+- pensar em um limitador nos contatos (em data?)
+- importar o histórico de mensagens enviadas e contatos
 - fazer primeiro disparo 100% do script botox/preenchimento
     
 comming next
+- exibir historico de mensagens enviadas no lead
+- resolvers 2.0 para incluir ativo de falta
 - protect api access
 - incluir stripe
 - POST to crmgraphql follow_up comments (pos-vendas)
 
-Mapear estrutura final
-- banco de dados: postgresql 
-- tem upload? sim... jpeg e mp4
-- domínio: konquista.com.br
-- digital ocean: lfariabr@gmail.com
 
+___ Anotacoes Samir infra
 - http://127.0.0.1:5000 (5000 = porta firewall - para coordenar entrada/saída)
     80http e 443https - frontend do site (procorpo.com.br)
     apache / nginx (webserver) 

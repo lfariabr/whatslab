@@ -19,7 +19,8 @@
 
                     <div class="form-group">
                         {{ form.text.label(class="form-label") }}
-                        {{ form.text(class="form-control", placeholder="Digite o texto") }}
+                        <!-- Ensure the textarea displays the message text with line breaks preserved -->
+                        <textarea class="form-control" name="text" rows="5" placeholder="Digite o texto">{{ form.text.data | nl2br }}</textarea>
                     </div>
 
                     <div class="form-group">

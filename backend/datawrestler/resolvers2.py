@@ -4,7 +4,7 @@ import pandas as pd
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 import time
-
+import sys
 from backend.config import db, app
 from backend.users.models import UserPhone
 from backend.leadgen.models import LeadLandingPage, LeadWhatsapp
@@ -119,7 +119,10 @@ def data_wrestling(leads_landing, leads_whatsapp, appointments, count_messages_b
 # Main function to process all the data we have carefully gathered
 def run_data_wrestling():
     print("Executing...")
-    
+    sys.stdout.flush()
+    time.sleep(0.1)
+
+    print("Selecting dates")
     # Initial data
     start_date = datetime(2024, 10, 1) # datetime.now() - timedelta(days=0)
     end_date = datetime(2024, 10, 1) # datetime.now() + timedelta(days=0)
@@ -127,22 +130,41 @@ def run_data_wrestling():
 
     load_dotenv()
     # Get data
+    print("Loading leads from core")
     leads_landing, leads_whatsapp = get_leads_from_core()
+    sys.stdout.flush()
+    time.sleep(0.1)
+    print("Loading sent message from core")
+    sys.stdout.flush()
+    time.sleep(0.1)
     df_count_messages_by_phone = count_sent_messages_to_lead_phone()
+    print("Loading appointments from graphQL")
+    sys.stdout.flush()
+    time.sleep(0.1)
     appointments_data = get_appointments(start_date, end_date)
+    print("Loading leads from graphQL")
+    sys.stdout.flush()
+    time.sleep(0.1)
     leads_data = get_leads(start_date, end_date)
 
     # Process data
     # maybe change individually to get_leads_landing e #get_leads_whatsapp
     leads_df = data_wrestling(leads_landing, leads_whatsapp, appointments_data, df_count_messages_by_phone, leads_data)
+    sys.stdout.flush()
+    time.sleep(0.1)
 
     # Convert the DataFrame to a list of dictionaries
     leads_list = leads_df.to_dict(orient='records')
     leads_json = json.dumps(leads_list, default=str, ensure_ascii=False, indent=4)
     print(leads_json)
+    sys.stdout.flush()
+    time.sleep(0.1)
 
+    print("Grabbing dict of messages and phones")
     # Get the messages from the database
     messages_dic = get_message()
+    sys.stdout.flush()
+    time.sleep(0.1)
 
     # Get the phones from the database
     phones_dic = get_phone_token()
@@ -204,6 +226,8 @@ def run_data_wrestling():
                 # Handling the response
                 if response.get('success', False):
                     print(f"Lead {phone} criado com sucesso!")
+                    sys.stdout.flush()
+                    time.sleep(0.1)
 
                     # Logging the action
                     lead = db.session.query(LeadWhatsapp).filter_by(phone=cliente['phone']).first()
@@ -258,6 +282,8 @@ def run_data_wrestling():
             if file:
                 response = cherry_pick_message(phone, mensagem, api_token, file)
                 time.sleep(10)
+                sys.stdout.flush()
+                time.sleep(0.1)
                 print("Resting 10 seconds...")
             else:
                 response = cherry_pick_message(phone, mensagem, api_token)
@@ -287,6 +313,8 @@ def run_data_wrestling():
                 except Exception as e:
                     db.session.rollback()
                     print(f"Failed to log message: {str(e)}")
+
+
                 
 def view_logs():
     logs = MessageLog.query.all()

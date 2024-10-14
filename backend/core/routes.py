@@ -1,10 +1,14 @@
-from flask import Blueprint, render_template, flash, redirect, url_for, current_app, send_from_directory
+from flask import Blueprint, render_template, flash, redirect, url_for, current_app, send_from_directory, request, Response, stream_with_context
 from flask_login import login_required, current_user
 from backend.config import db
 from backend.users.models import MessageList, UserPhone
 from backend.users.forms import MessageForm, UserPhoneForm
+from backend.datawrestler.resolvers2 import run_data_wrestling
+from backend.apisocialhub.models import MessageLog
 from werkzeug.utils import secure_filename
 import os
+import io
+import sys
 
 core_blueprint = Blueprint('core', __name__)
 
@@ -63,8 +67,6 @@ def message_list():
 
     # Render the message list template, passing the messages to the template
     return render_template('core/message_list.html', messages=messages)
-
-    return render_template('core/new_message.html', form=form)
 
 # Route for Editing a Message
 @core_blueprint.route('/edit_message/<int:id>', methods=['GET', 'POST'])
@@ -170,3 +172,54 @@ def delete_phone(id):
     db.session.commit()
     flash('Telefone deletado com sucesso!')
     return redirect(url_for('core.phone_list'))
+
+# Route to render the page with the button
+@core_blueprint.route('/datawrestler', methods=['GET'])
+def run_datawrestler_page():
+    # Render the page with the button
+    return render_template('core/logs.html')
+
+@core_blueprint.route('/run_datawrestler', methods=['POST'])
+def run_datawrestler_route():
+    def generate_logs():
+        yield "Processing started...\n"
+        sys.stdout.flush()
+
+        try:
+            # Set up Flask application context
+            with current_app.app_context():
+                log_capture_string = io.StringIO()
+                sys.stdout = log_capture_string  # Redirect stdout to capture print statements
+                
+                yield "Starting data wrestling...\n"
+                sys.stdout.flush()
+
+                run_data_wrestling()  # Call the function that has `print` statements
+
+                # After running the function, yield the captured logs progressively
+                sys.stdout = sys.__stdout__  # Reset stdout to default
+                logs = log_capture_string.getvalue()  # Get the logs as a string
+                
+                # Yield logs progressively and flush each time
+                for log in logs.splitlines():
+                    yield log + "\n"
+                    sys.stdout.flush()
+
+        except Exception as e:
+            yield f"Failed to run datawrestler. Error: {e}\n"
+            sys.stdout.flush()
+
+        yield "Data wrestling finished.\n"
+        sys.stdout.flush()
+
+    # Ensure logs are progressively streamed back
+    return Response(stream_with_context(generate_logs()), content_type='text/plain')
+
+# Rota para exibir os logs de mensagens
+@core_blueprint.route('/message_logs', methods=['GET'])
+def message_logs():
+    # Busca todos os registros de logs no banco de dados
+    logs = MessageLog.query.all()
+
+    # Renderiza a página HTML passando os logs
+    return render_template('core/message_logs.html', logs=logs)

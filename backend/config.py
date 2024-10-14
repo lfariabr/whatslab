@@ -6,6 +6,8 @@ from flask_cors import CORS
 from flask_login import LoginManager
 from dotenv import load_dotenv
 import logging
+import re
+from markupsafe import Markup
 
 app = Flask(__name__, 
             template_folder='../frontend/templates',
@@ -52,3 +54,12 @@ def load_user(user_id):
 
 # Adjust logging to reduce verbosity
 logging.basicConfig(level=logging.WARNING)
+
+# Custom filter to replace newlines with <br> tags
+def nl2br(value):
+    # Substituir múltiplas quebras de linha (\n\n+) por uma só \n e adicionar <br>
+    value = re.sub(r'\n\s*\n+', '\n', value)
+    return Markup(value.replace('\n', '<br>'))
+
+# Registering custom filter with the Flask app
+app.jinja_env.filters['nl2br'] = nl2br
