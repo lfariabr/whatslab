@@ -84,3 +84,6 @@ migrations/
 *.pid
 *.out
 *.err
+
+# Notes
+notes.txt
