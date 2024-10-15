@@ -250,6 +250,19 @@ ALTER COLUMN message_text TYPE VARCHAR(1000); -- Adjust the size as per your req
 - did the same on SQLAlchemy
 flask db migrate -m "Increase message_text length to 1000"
 flask db upgrade
+- commit changes
+- push to production
+ssh root@157.245.216.158
+cd flask_app
+git pull origin main
+sudo docker build -t whatslab-image .
+# Remove existing container
+sudo docker stop whatslab-container
+sudo docker rm whatslab-container
+# Start a new container
+sudo docker run -d -p 5000:5000 --name whatslab-container whatslab-image
+# Check container
+sudo docker ps
 
 ________________________
 python wsgi.py
