@@ -226,19 +226,38 @@ sudo apt update && sudo apt upgrade
 - changing message type to db.text instead of db.String(256)
 - accepting "enter" character on texts 
 - update all text messages
+- Commit changes
+- Test vercel
+- Image Docker
+a conectar no droplet > git pull origin main
+b reconstruir a imagem no docker> sudo docker build -t whatslab-image .
+c parar container atual: sudo docker stop e63cf189dc59
+d remover container atual: sudo docker rm e63cf189dc59
+c rodar um novo container baseado na nova imagem
+sudo docker run -d -p 5000:5000 --name whatslab-container whatslab-image
+
+15/10
+- adding images on the frontend
+- testar disparo de pesquisa d7
+- SELECT setval(pg_get_serial_sequence('messagelist', 'id'), COALESCE(MAX(id), 1) + 1, false) FROM messagelist;
+- update all file on messages 
+- adjust database column to 1000 characters
+ALTER TABLE message_logs
+ALTER COLUMN message_text TYPE VARCHAR(1000); -- Adjust the size as per your requirements
+- testar rodar botox full cycle (validate msgs+texts)
+- testar rodar preenchimento full cycle (validate msgs+texts)
+- Inserir log de lead upload
+- did the same on SQLAlchemy
+flask db migrate -m "Increase message_text length to 1000"
+flask db upgrade
 
 ________________________
 python wsgi.py
 BACKLOG
 ________________________
 
-
 to be done
-- update all file messages 
-- testar rodar botox full cycle
-- testar rodar preenchimento full cycle
 - testar rodar um período maior query leads e agd (15 dias)
-
 - preparar o primeiro disparo: leads, historico.. já dar o start por aqui!
 - pensar em um limitador nos contatos (em data?)
 - importar o histórico de mensagens enviadas e contatos

@@ -118,53 +118,38 @@ def data_wrestling(leads_landing, leads_whatsapp, appointments, count_messages_b
 
 # Main function to process all the data we have carefully gathered
 def run_data_wrestling():
-    print("Executing...")
-    sys.stdout.flush()
-    time.sleep(0.1)
-
-    print("Selecting dates")
+    print("Data wrestling begins... selecting dates")
     # Initial data
     start_date = datetime(2024, 10, 1) # datetime.now() - timedelta(days=0)
     end_date = datetime(2024, 10, 1) # datetime.now() + timedelta(days=0)
     today = datetime.now().strftime("%d/%m/%Y")
-
     load_dotenv()
+    
     # Get data
     print("Loading leads from core")
     leads_landing, leads_whatsapp = get_leads_from_core()
-    sys.stdout.flush()
-    time.sleep(0.1)
+    
     print("Loading sent message from core")
-    sys.stdout.flush()
-    time.sleep(0.1)
     df_count_messages_by_phone = count_sent_messages_to_lead_phone()
+    
     print("Loading appointments from graphQL")
-    sys.stdout.flush()
-    time.sleep(0.1)
     appointments_data = get_appointments(start_date, end_date)
+    
     print("Loading leads from graphQL")
-    sys.stdout.flush()
-    time.sleep(0.1)
     leads_data = get_leads(start_date, end_date)
 
     # Process data
     # maybe change individually to get_leads_landing e #get_leads_whatsapp
     leads_df = data_wrestling(leads_landing, leads_whatsapp, appointments_data, df_count_messages_by_phone, leads_data)
-    sys.stdout.flush()
-    time.sleep(0.1)
-
+    
     # Convert the DataFrame to a list of dictionaries
     leads_list = leads_df.to_dict(orient='records')
     leads_json = json.dumps(leads_list, default=str, ensure_ascii=False, indent=4)
     print(leads_json)
-    sys.stdout.flush()
-    time.sleep(0.1)
-
+    
     print("Grabbing dict of messages and phones")
     # Get the messages from the database
     messages_dic = get_message()
-    sys.stdout.flush()
-    time.sleep(0.1)
 
     # Get the phones from the database
     phones_dic = get_phone_token()
@@ -190,11 +175,11 @@ def run_data_wrestling():
         # Process leads without appointments, leads and source Whatsapp
         if not has_appointment and not has_lead and source == "Whatsapp":
 
-            # Determine the campaign based on the tag
             # Tag Type
             if tag == "Botox":
                 campaign = "Botox"
                 phone_description = "Botox"
+
             elif tag == "Preenchimento":
                 campaign = "Preenchimento"
                 phone_description = "Preenchimento"
@@ -204,36 +189,37 @@ def run_data_wrestling():
 
             # Defining message based on conditions
             # Define the message key based on the contador
-            if contador == 0: ##### TESTANDO
+            if contador == 0:
                 message_key = f"{campaign.lower()}d1"
             elif contador == 1:
                 message_key = f"{campaign.lower()}d2"
             elif contador == 2:
                 message_key = f"{campaign.lower()}d3"
-            elif contador == 3: # and dias_depois_da_conversa >= 7: #maybe better remove contador, just keep dias_depois...
-                message_key = "pesquisad7"
-            # elif contador == 3: # and dias_depois_da_conversa >= 30: #maybe better remove contador, just keep dias_depois...
-            #     message_key = "botox30d"
-            elif contador == 4:
-                # Creating lead in CRM
-                print(f"Subind o {phone} como lead no CRM")
+            
+            # Creating lead in CRM
+            elif contador == 3:
                 email = "campanha@whatsapp.com"
                 message = f"Lead da campanha {campaign}"
 
                 # Calling the create lead function
                 response = create_lead(name, phone, email, message, store, region)
 
-                # Handling the response
-                if response.get('success', False):
+                # Correctly handle response checking if createdLead exists
+                if 'data' in response and 'createLead' in response['data']:
                     print(f"Lead {phone} criado com sucesso!")
-                    sys.stdout.flush()
-                    time.sleep(0.1)
 
-                    # Logging the action
+                try:
+                    # Re-fetch the lead to ensure it's in the database
                     lead = db.session.query(LeadWhatsapp).filter_by(phone=cliente['phone']).first()
+                    
+                    if lead is None:
+                        print(f"Failed to find lead with phone {cliente['phone']}")
+                        continue  # Skip logging if no lead found
+
+                    # Proceed to log
                     log = MessageLog(
                         sender_phone_id=None,  # No sender phone since it's lead creation
-                        sender_phone_number=None,
+                        sender_phone_number="N/A",  # Assuming this is allowed in your schema
                         source="CRM",
                         lead_phone_id=lead.id if lead else None,
                         lead_phone_number=cliente['phone'],
@@ -242,14 +228,20 @@ def run_data_wrestling():
                         message_text=message,
                         date_sent=datetime.now()
                     )
-                    try:
-                        db.session.add(log)
-                        db.session.commit()
-                    except Exception as e:
-                        db.session.rollback()
-                        print(f"Failed to log lead creation. Error: {e}")
-                    continue
+                    db.session.add(log)
+                    db.session.commit()
 
+                except Exception as e:
+                    db.session.rollback()
+                    print(f"Failed to log lead creation. Error: {e}")
+
+                continue # Skip message sending...
+                
+            # Extra additions    
+            elif contador == 4 and dias_depois_da_conversa >= 7:# contador == 3: # #maybe better remove contador, just keep dias_depois...
+                message_key = "pesquisad7"
+            elif contador == 5 and dias_depois_da_conversa >= 30: #maybe better remove contador, just keep dias_depois...
+                 message_key = "botox30d"
             else:
                 print(f"Contador {contador} não mapeado para uma mensagem.")
                 continue
@@ -258,7 +250,7 @@ def run_data_wrestling():
             mensagem = messages_dic.get(message_key, {}).get("text", None)
             file = messages_dic.get(message_key, {}).get("file", None)
             if not mensagem:
-                print(f"Mensagem para o {contador} não encontrada. Mensagem: {message_key}")
+                print(f"Mensagem para o contador {contador} não encontrada. Mensagem: {message_key}")
                 continue
 
             # Get the sender phone data based on phone descr
@@ -282,8 +274,6 @@ def run_data_wrestling():
             if file:
                 response = cherry_pick_message(phone, mensagem, api_token, file)
                 time.sleep(10)
-                sys.stdout.flush()
-                time.sleep(0.1)
                 print("Resting 10 seconds...")
             else:
                 response = cherry_pick_message(phone, mensagem, api_token)

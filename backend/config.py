@@ -57,9 +57,16 @@ logging.basicConfig(level=logging.WARNING)
 
 # Custom filter to replace newlines with <br> tags
 def nl2br(value):
-    # Substituir múltiplas quebras de linha (\n\n+) por uma só \n e adicionar <br>
-    value = re.sub(r'\n\s*\n+', '\n', value)
-    return Markup(value.replace('\n', '<br>'))
+    if value is None:
+        value = ''  # If value is None, set it to an empty string
+
+    # Replace consecutive newlines (\n\n) with <br><br> (paragraph break)
+    value = value.replace("\n\n", "<br><br>")
+
+    # Replace single newlines (\n) with a space, avoiding extra <br> tags
+    value = value.replace("\n", " ")
+
+    return Markup(value)
 
 # Registering custom filter with the Flask app
 app.jinja_env.filters['nl2br'] = nl2br
