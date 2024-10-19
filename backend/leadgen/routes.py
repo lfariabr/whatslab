@@ -4,9 +4,11 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 import os
 import pandas as pd
 from werkzeug.utils import secure_filename
-from .data_cleaner import process_csv_files
 from datetime import datetime
 import logging
+from sqlalchemy import desc
+from .data_cleaner import process_csv_files # triggered on line 122 *task* highlight
+
 
 # Absolute imports
 from backend.leadgen.models import LeadLandingPage, LeadWhatsapp
@@ -62,19 +64,28 @@ def allowed_file(filename):
 def upload():
     logging.info("Entrou na rota de upload CSV")
     if request.method == 'POST':
-        # Capturando a data do formulário. Se estiver vazia, define como data atual.
+        # used to capture the date within the form
+        # that comes from the website managed by user
+        # manually importing contacts from csv file
+        # if it's empty, set it to current date
         date_str = request.form.get('date')
         if not date_str:
-            created_date = datetime.now()  # Mantemos como objeto datetime
-    
+            # automatically set date to current date&time
+            created_date = datetime.now()  
         else:
             try:
-                created_date = datetime.strptime(date_str, '%Y-%m-%d')  # Convertendo para datetime
+                # Convert to datetime because dealing with 
+                # dates and times is DELICATE/DELICIOUS
+                created_date = datetime.strptime(date_str, '%Y-%m-%d')  
             except ValueError:
-                flash('Formato de data inválido. Use o formato YYYY-MM-DD.')
-                logging.error("Formato de data inválido")
+                flash('Ops... Wrong date format!')
+                logging.error("Ops... Wrong date format!")
                 return redirect(url_for('leadgen.upload'))
-        logging.info(f"Data recebida: {date_str}")    
+        logging.info(f"Data recebida: {date_str}")
+
+        # Grab the uploaded files *task*
+        # an improvement could be make them not mandatory
+        # for example user might upload only 1 file    
         botox_file = request.files.get('botox_file')
         preenchimento_file = request.files.get('preenchimento_file')
         logging.info(f"Arquivos recebidos - Botox: {botox_file}, Preenchimento: {preenchimento_file}")
@@ -82,7 +93,15 @@ def upload():
         if not botox_file and not preenchimento_file:
             flash('Nenhum arquivo selecionado')
             return redirect(url_for('leadgen.upload'))
-
+        # *task* create a library that does exactly what
+        # i want with the *task* thing... 
+        # you import it, then you run it on the page
+        # later on it scraps your code for you
+        # or you can just put it in a function and call it (IA insight)
+        # and grabs all *task* points from the code and 
+        # generates a to-do list integrated with trello or jira or your email
+        # or something like that
+        # could it be an open source project? is there anything similar of it?
         botox_file_path = None
         preenchimento_file_path = None
 
@@ -100,7 +119,10 @@ def upload():
 
         # Processar os arquivos enviados
         if botox_file or preenchimento_file:
-            df_leads_whatsapp = process_csv_files(botox_file_path, preenchimento_file_path)
+            df_leads_whatsapp = process_csv_files(
+                                    botox_file_path, 
+                                    preenchimento_file_path
+                                )
 
             # Iterando sobre as linhas do DataFrame e salvando no banco
             for index, row in df_leads_whatsapp.iterrows():
@@ -110,21 +132,23 @@ def upload():
 
                     if not name or not phone:
                         continue
-                    # Definindo a tag com base no arquivo enviado
+                    # Defining the tag on the database to be according to the filename
                     tag = 'Preenchimento' if 'preenchimento' in row['filename'] else 'Botox'
+
+                    # Preparing the data for the database
                     lead = LeadWhatsapp(
-                        name=row['Nome'],
-                        phone=row['Whatsapp'],
-                        created_date=created_date,  # Usando a data selecionada no front-end
-                        tag=tag,
-                        source='Whatsapp',
-                        #store=row['Unidade'],
-                        #region=row['Região'],
-                        #tags=row['Tags']
-                        store=row.get('Unidade', 'CENTRAL'),
-                        region=row.get('Região', 'São Paulo'),
-                        tags=row.get('Tags', 'SEM TAGS')
-                    )
+                                    name=row['Nome'],
+                                    phone=row['Whatsapp'],
+                                    created_date=created_date,  # Usando a data selecionada no front-end
+                                    tag=tag,
+                                    source='Whatsapp',
+                                    #store=row['Unidade'],
+                                    #region=row['Região'],
+                                    #tags=row['Tags']
+                                    store=row.get('Unidade', 'CENTRAL'),
+                                    region=row.get('Região', 'São Paulo'),
+                                    tags=row.get('Tags', 'SEM TAGS')
+                                )
                     db.session.add(lead)
                     db.session.commit()
                 
@@ -138,14 +162,29 @@ def upload():
 
 #### CHECKING WHATSAPP LEADS
 @leadgen_blueprint.route('/leads_whatsapp', methods=['GET'])
-@login_required 
+@login_required
 def view_leads_whatsapp():
+    # instead of querying for all leads
+    # leads = LeadWhatsapp.query.all()
+    # we changed to pagination
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
     try:
-        leads = LeadWhatsapp.query.all()
+        pagination = LeadWhatsapp.query.order_by(
+                    desc(LeadWhatsapp.id)).paginate(
+                        page=page, per_page=per_page
+                    )
+        # total_leads = LeadWhatsapp.query.count()
+        # also request only one page to optimize
+        leads = pagination.items
     except TypeError as e:
-        # Log the error, inform the user, or return a friendly error message
-        return "Oh dear, the time machine broke. We've got dates flying all over the place!", 500
-    return render_template('core/view_leads.html', leads=leads)
+        return "Ops... couln't load leads!", 500
+
+    return render_template(
+                        'core/view_leads.html', 
+                        leads=leads, 
+                        pagination=pagination
+                        )
 
 #### EDITING WHATSAPP LEADS
 @leadgen_blueprint.route('/edit_leads/<int:lead_id>', methods=['GET', 'POST'])

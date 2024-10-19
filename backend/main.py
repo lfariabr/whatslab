@@ -65,12 +65,11 @@ from .datawrestler.resolvers2 import run_data_wrestling, get_leads_whatsapp, dat
 
 # # Configurando o scheduler
 # scheduler = BackgroundScheduler()                                 # seconds=3
-# scheduler.add_job(func=schedule_datawrestler, trigger="interval", minutes=1)  # minutes=1 / hours=24
+# scheduler.add_job(func=schedule_datawrestler, trigger="interval", minutes=60)  # minutes=1 / hours=24
 # scheduler.start()
 
 # # Garante que o scheduler desligue ao finalizar a aplicação
 # atexit.register(lambda: scheduler.shutdown())
-
 
 # with app.app_context():
 #     db.create_all()

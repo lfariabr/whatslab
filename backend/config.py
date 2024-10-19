@@ -8,6 +8,8 @@ from dotenv import load_dotenv
 import logging
 import re
 from markupsafe import Markup
+from sqlalchemy import event, Engine
+
 
 app = Flask(__name__, 
             template_folder='../frontend/templates',
@@ -24,7 +26,9 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
 load_dotenv()
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL') # SSL req already at .env
+# app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL') # SSL req already at .env
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL') + "&connect_timeout=300"
+
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///mydatabase.db' # for local dev
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -42,6 +46,13 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
 db = SQLAlchemy(app, session_options={"autocommit": False, "autoflush": False})
 migrate = Migrate(app, db)
 
+# Set the statement timeout to 20 minutes (1,200,000 ms)
+@event.listens_for(Engine, "connect")
+def set_timeout(dbapi_connection, connection_record):
+    cursor = dbapi_connection.cursor()
+    cursor.execute("SET statement_timeout = 1200000;")  # 20 minutes
+    cursor.close()
+
 # Flask Login
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -54,6 +65,11 @@ def load_user(user_id):
 
 # Adjust logging to reduce verbosity
 logging.basicConfig(level=logging.WARNING)
+# Enable SQLAlchemy engine logging for debugging (replace `INFO` with `DEBUG` for more detail)
+logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+# Optionally, you can log errors specifically for SQLAlchemy
+logging.getLogger('sqlalchemy.pool').setLevel(logging.INFO)
+logging.getLogger('sqlalchemy.dialects').setLevel(logging.INFO)
 
 # Custom filter to replace newlines with <br> tags
 def nl2br(value):

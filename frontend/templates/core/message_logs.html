@@ -5,6 +5,9 @@
     <div class="container">
         <h1 class="text-center mb-5">Logs de Mensagens Enviadas</h1>
 
+        <!-- Display total logs count -->
+        <p class="text-center">Total Logs: {{ total_logs }}</p>
+
         {% if logs %}
         <div class="table-responsive">
             <table class="table table-hover table-bordered">
@@ -40,6 +43,38 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Pagination controls -->
+        <nav aria-label="Message log pagination">
+            <ul class="pagination justify-content-center">
+                <!-- Previous button -->
+                <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('core.message_logs', page=pagination.prev_num) }}" aria-label="Previous">
+                        &laquo; Anterior
+                    </a>
+                </li>
+
+                <!-- Current page indicator -->
+                <li class="page-item active">
+                    <span class="page-link">Página {{ pagination.page }} de {{ pagination.pages }}</span>
+                </li>
+
+                <!-- Next button -->
+                <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('core.message_logs', page=pagination.next_num) }}" aria-label="Next">
+                        Próxima &raquo;
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- "Go to page" input field -->
+        <form method="GET" action="{{ url_for('core.message_logs') }}" class="form-inline justify-content-center mt-3">
+            <label class="mr-2" for="page-input">Ir para página:</label>
+            <input type="number" name="page" id="page-input" class="form-control mr-2" placeholder="Número da página" min="1" max="{{ pagination.pages }}" required>
+            <button type="submit" class="btn btn-primary">Ir</button>
+        </form>
+
         {% else %}
             <div class="alert alert-info text-center" role="alert">
                 Não há logs de mensagens disponíveis.

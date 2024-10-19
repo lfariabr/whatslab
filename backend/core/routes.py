@@ -1,14 +1,15 @@
-from flask import Blueprint, render_template, flash, redirect, url_for, current_app, send_from_directory, request, Response, stream_with_context
+from flask import Blueprint, render_template, flash, redirect, url_for, current_app, send_from_directory, request, jsonify
 from flask_login import login_required, current_user
-from backend.config import db
+from backend.config import db, app
 from backend.users.models import MessageList, UserPhone
 from backend.users.forms import MessageForm, UserPhoneForm
 from backend.datawrestler.resolvers2 import run_data_wrestling
 from backend.apisocialhub.models import MessageLog
 from werkzeug.utils import secure_filename
 import os
-import io
-import sys
+import threading
+from sqlalchemy import desc
+from flask_socketio import SocketIO, emit
 
 core_blueprint = Blueprint('core', __name__)
 
@@ -27,45 +28,31 @@ def new_message():
     
     if form.validate_on_submit():
         if form.file.data and hasattr(form.file.data, 'filename'):
-            # Defining file secure name
             filename = secure_filename(form.file.data.filename)
-
-            # Complete file path where it's gonna be saved
             file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-
-            # Saving file at server
             form.file.data.save(file_path)
-        
         else:   
             file_path = None
 
-        # Create a new message record
         message = MessageList(
             title=form.title.data, 
             text=form.text.data, 
             interval=form.interval.data, 
-            file=filename # form.file.data
+            file=filename
         )
 
-        # Add and commit to the database
         db.session.add(message)
         db.session.commit()
         flash('Mensagem cadastrada com sucesso!')
-
-        # Redirect to the message list after saving
         return redirect(url_for('core.message_list'))
     
-     # Render the new message form if it's a GET request or if validation fails
     return render_template('core/new_message.html', form=form)
 
 # Route for Viewing All Messages
 @core_blueprint.route('/message_list', methods=['GET'])
 @login_required
 def message_list():
-    # Fetch all messages from the database
     messages = MessageList.query.all()
-
-    # Render the message list template, passing the messages to the template
     return render_template('core/message_list.html', messages=messages)
 
 # Route for Editing a Message
@@ -80,32 +67,23 @@ def edit_message(id):
         message.text = form.text.data
         message.interval = form.interval.data
 
-        # Verificar se um novo arquivo foi enviado
         if form.file.data and hasattr(form.file.data, 'filename'):
-            # Definir o nome seguro do arquivo
             filename = secure_filename(form.file.data.filename)
-            # Caminho completo do arquivo onde ele será salvo
             file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-
             if not os.path.exists(current_app.config['UPLOAD_FOLDER']):
                 os.makedirs(current_app.config['UPLOAD_FOLDER'])
-
-            # Salvar o arquivo no servidor
             form.file.data.save(file_path)
-            # Atualizar o caminho do arquivo na mensagem
             message.file = filename
         else:
-            # Se nenhum novo arquivo foi enviado, manter o arquivo existente
-            message.file = message.file  # Mantém o caminho do arquivo existente
+            message.file = message.file
 
-        # Salvar as alterações no banco de dados
         db.session.commit()
         flash('Mensagem editada com sucesso!')
         return redirect(url_for('core.message_list'))
-    
-    # Pass the `message` object to the template
+
     return render_template('core/new_message.html', form=form, message=message)
 
+# Route for uploading files
 @core_blueprint.route('/uploads/<filename>')
 @login_required
 def uploaded_file(filename):
@@ -176,50 +154,52 @@ def delete_phone(id):
 # Route to render the page with the button
 @core_blueprint.route('/datawrestler', methods=['GET'])
 def run_datawrestler_page():
-    # Render the page with the button
     return render_template('core/logs.html')
 
+# SocketIO setup
+socketio = SocketIO(app)
+stop_flag = threading.Event()  # Stop flag for killing the thread
+
+# Background task to run data wrestling
+def run_data_wrestling_background(app):
+    with app.app_context():
+        try:
+            for log in run_data_wrestling():
+                if stop_flag.is_set():  # Check the stop flag on each iteration
+                    print("Stopping data wrestling process.")
+                    break  # Exit the loop if stop is requested
+
+                # Emit logs to the frontend in real-time
+                socketio.emit('log_message', log)
+                print(log)
+        except Exception as e:
+            print(f"Error while running data wrestler: {e}")
+
+# Route to start the data wrestling process
 @core_blueprint.route('/run_datawrestler', methods=['POST'])
 def run_datawrestler_route():
-    def generate_logs():
-        yield "Processing started...\n"
-        sys.stdout.flush()
+    stop_flag.clear()  # Clear the stop flag before starting
+    app = current_app._get_current_object()
+    thread = threading.Thread(target=run_data_wrestling_background, args=(app,), daemon=True)
+    thread.start()
+    return jsonify({"message": "Data wrestling process started successfully"}), 200
 
-        try:
-            # Set up Flask application context
-            with current_app.app_context():
-                log_capture_string = io.StringIO()
-                sys.stdout = log_capture_string  # Redirect stdout to capture print statements
-                
-                yield "Starting data wrestling...\n"
-                sys.stdout.flush()
+# Route to stop the data wrestling process
+@core_blueprint.route('/stop_datawrestler', methods=['POST'])
+def stop_datawrestler_route():
+    stop_flag.set()  # Set the stop flag to stop the process
+    return jsonify({"message": "Data wrestling process stopped successfully"}), 200
 
-                run_data_wrestling()  # Call the function that has `print` statements
-
-                # After running the function, yield the captured logs progressively
-                sys.stdout = sys.__stdout__  # Reset stdout to default
-                logs = log_capture_string.getvalue()  # Get the logs as a string
-                
-                # Yield logs progressively and flush each time
-                for log in logs.splitlines():
-                    yield log + "\n"
-                    sys.stdout.flush()
-
-        except Exception as e:
-            yield f"Failed to run datawrestler. Error: {e}\n"
-            sys.stdout.flush()
-
-        yield "Data wrestling finished.\n"
-        sys.stdout.flush()
-
-    # Ensure logs are progressively streamed back
-    return Response(stream_with_context(generate_logs()), content_type='text/plain')
-
-# Rota para exibir os logs de mensagens
+# Route for message logs with pagination
 @core_blueprint.route('/message_logs', methods=['GET'])
 def message_logs():
-    # Busca todos os registros de logs no banco de dados
-    logs = MessageLog.query.all()
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+    try:
+        pagination = MessageLog.query.order_by(desc(MessageLog.id)).paginate(page=page, per_page=per_page)
+        logs = pagination.items
+        total_logs = pagination.total
+    except TypeError as e:
+        return "Ops.. couldn't get the logs", 500
 
-    # Renderiza a página HTML passando os logs
-    return render_template('core/message_logs.html', logs=logs)
+    return render_template('core/message_logs.html', logs=logs, pagination=pagination, total_logs=total_logs)

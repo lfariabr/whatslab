@@ -51,12 +51,16 @@ def process_csv_files_v1(botox_file_path=None, preenchimento_file_path=None):
 # Process CSV v2.0 - considering Tag/Region/Store
 def process_csv_files(botox_file_path=None, preenchimento_file_path=None):
     df_list = []
-
+    # *task* maybe here we'll need to write conditions
+    # to not make mandatory both of botox_file_path and preenchimento_file_path
+    # maybe user is gonna upload only one... or three.. 
+    # and want to have "tags" or "filename" option to chose from
     try:
         if botox_file_path:
             # Ensure the file exists and is read correctly
             df_botox = pd.read_csv(botox_file_path)
-            df_botox['filename'] = 'botox'  # Adiciona a coluna 'filename' com o valor 'botox'
+            df_botox['filename'] = 'botox'  
+            # Adiciona a coluna 'filename' com o valor 'botox'
             df_list.append(df_botox)
 
         if preenchimento_file_path:
@@ -64,7 +68,7 @@ def process_csv_files(botox_file_path=None, preenchimento_file_path=None):
             df_preenchimento['filename'] = 'preenchimento'  # Adiciona a coluna 'filename' com o valor 'preenchimento'
             df_list.append(df_preenchimento)
 
-     # If no files were processed, return an empty DataFrame
+        # If no files were processed, return an empty DataFrame
         if not df_list:
             return pd.DataFrame()
 
