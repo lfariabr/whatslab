@@ -164,18 +164,36 @@ def upload():
 @leadgen_blueprint.route('/leads_whatsapp', methods=['GET'])
 @login_required
 def view_leads_whatsapp():
-    # instead of querying for all leads
-    # leads = LeadWhatsapp.query.all()
-    # we changed to pagination
+    # Pagination via query for improving efficiency
     page = request.args.get('page', 1, type=int)
     per_page = 10
+    filters = {
+        'name': request.args.get('name', type=str),
+        'phone': request.args.get('phone', type=str),
+        'creation_date': request.args.get('creation_date', type=str),
+        'tag': request.args.get('tag', type=str),
+        'source': request.args.get('source', type=str),
+        'unit': request.args.get('unit', type=str),
+        'region': request.args.get('region', type=str),
+        'tags': request.args.get('tags', type=str),
+    }
+    
+    # Building the query based on filters
+    query = LeadWhatsapp.query
+    for attr, value in filters.items():
+        if value:
+            column = getattr(LeadWhatsapp, attr, None)
+            if column:
+                query = query.filter(column == value)
+                
+    # Pagination                
     try:
-        pagination = LeadWhatsapp.query.order_by(
+        pagination = query.order_by(
                     desc(LeadWhatsapp.id)).paginate(
                         page=page, per_page=per_page
                     )
         # total_leads = LeadWhatsapp.query.count()
-        # also request only one page to optimize
+        # also request only one page to optimize.
         leads = pagination.items
     except TypeError as e:
         return "Ops... couln't load leads!", 500

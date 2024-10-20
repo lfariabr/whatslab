@@ -198,11 +198,37 @@ def stop_datawrestler_route():
 def message_logs():
     page = request.args.get('page', 1, type=int)
     per_page = 10
+    filters = {
+        'id' : request.args.get('id', type=int),
+        'date_sent' : request.args.get('date_sent', type=str),
+        'message_title' : request.args.get('message_title', type=str),
+        'sender_phone_number' : request.args.get('sender_phone_number', type=str),
+        'lead_phone_number' : request.args.get('lead_phone_number', type=str),
+        'status' : request.args.get('status', type=str),
+    }
+
+    # Building the query based on filters
+    query = MessageLog.query
+    for attr, value in filters.items():
+        if value:
+            column = getattr(MessageLog, attr, None)
+            if column:
+                query = query.filter(column == value)
+    # Pagination
+
     try:
-        pagination = MessageLog.query.order_by(desc(MessageLog.id)).paginate(page=page, per_page=per_page)
+        pagination = query.order_by(
+                        desc(MessageLog.id)).paginate(
+                            page=page, per_page=per_page
+                        )
         logs = pagination.items
         total_logs = pagination.total
     except TypeError as e:
         return "Ops.. couldn't get the logs", 500
 
-    return render_template('core/message_logs.html', logs=logs, pagination=pagination, total_logs=total_logs)
+    return render_template(
+                        'core/message_logs.html', 
+                        logs=logs, 
+                        pagination=pagination, 
+                        total_logs=total_logs
+                        )
