@@ -184,8 +184,8 @@ def run_data_wrestling():
             return
         # start_date = datetime(2024, 10, 17) # datetime.now() - timedelta(days=0)
         # end_date = datetime(2024, 10, 17) # datetime.now() + timedelta(days=0)
-        start_date = datetime.now() - timedelta(days=0)
-        end_date = datetime.now() + timedelta(days=0)
+        start_date = datetime.now() - timedelta(days=15)
+        end_date = datetime.now() + timedelta(days=15)
         yield f"Start date: {start_date}, End date: {end_date}\n"
 
         today = datetime.now().strftime("%d/%m/%Y")

@@ -27,32 +27,32 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
 ######################
 ## DATABASE dev | lines 31 & 32
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///mydatabase.db' # for local dev
-db = SQLAlchemy(app)
-app.config['DEBUG'] = True
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///mydatabase.db' # for local dev
+# db = SQLAlchemy(app)
+
 # #####################
 # DATABASE prod | lines 36 - 57
-# app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL') + "&connect_timeout=300"
-# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL') + "&connect_timeout=300"
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# # SQLAlchemy optimizations for connection handling
-# app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-#     'pool_pre_ping': True,
-#     'pool_size': 5,  # Adjust as per your needs, smaller pools can reduce initialization time.
-#     'max_overflow': 10,  # Number of connections exceeding the pool size.
-#     'pool_timeout': 30,  # Timeout for getting a connection from the pool.
-#     'pool_recycle': 1800  # Recycle connections every 30 minutes.
-# }
+# SQLAlchemy optimizations for connection handling
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_pre_ping': True,
+    'pool_size': 5,  # Adjust as per your needs, smaller pools can reduce initialization time.
+    'max_overflow': 10,  # Number of connections exceeding the pool size.
+    'pool_timeout': 30,  # Timeout for getting a connection from the pool.
+    'pool_recycle': 1800  # Recycle connections every 30 minutes.
+}
 
-# # Set the statement timeout to 20 minutes (1,200,000 ms)
-# @event.listens_for(Engine, "connect")
-# def set_timeout(dbapi_connection, connection_record):
-#     cursor = dbapi_connection.cursor()
-#     cursor.execute("SET statement_timeout = 1200000;")  # 20 minutes
-#     cursor.close()
-# #####################
-# #####################
-# db = SQLAlchemy(app, session_options={"autocommit": False, "autoflush": False})
+# Set the statement timeout to 20 minutes (1,200,000 ms)
+@event.listens_for(Engine, "connect")
+def set_timeout(dbapi_connection, connection_record):
+    cursor = dbapi_connection.cursor()
+    cursor.execute("SET statement_timeout = 1200000;")  # 20 minutes
+    cursor.close()
+#####################
+#####################
+db = SQLAlchemy(app, session_options={"autocommit": False, "autoflush": False})
 
 ######################
 ## MIGRATE / LOGIN / LOGS
@@ -78,8 +78,8 @@ error_file_path = "/tmp/errors.log"
 # Production: lines 83-84 # *task* WARNING to DEBUG
 logging.basicConfig(level=logging.DEBUG,
                     handlers=[
-                                logging.FileHandler("app.log"),
-                              logging.FileHandler("errors.log"),
+                                # logging.FileHandler("app.log"),
+                            #   logging.FileHandler("errors.log"),
                               RotatingFileHandler(log_file_path, maxBytes=10240, backupCount=3),
                                 RotatingFileHandler(error_file_path, maxBytes=10240, backupCount=3),
                               logging.StreamHandler()  # Uncomment to log to console
