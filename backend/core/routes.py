@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from backend.config import db, app
 from backend.users.models import MessageList, UserPhone
 from backend.users.forms import MessageForm, UserPhoneForm
-from backend.datawrestler.resolvers2 import run_data_wrestling
+from backend.datawrestler.resolvers import run_data_wrestling
 from backend.apisocialhub.models import MessageLog
 from werkzeug.utils import secure_filename
 import os
@@ -154,7 +154,7 @@ def delete_phone(id):
 # Route to render the page with the button
 @core_blueprint.route('/datawrestler', methods=['GET'])
 def run_datawrestler_page():
-    return render_template('core/logs.html')
+    return render_template('core/messages_handler.html')
 
 # SocketIO setup
 socketio = SocketIO(app)
@@ -165,9 +165,9 @@ def run_data_wrestling_background(app):
     with app.app_context():
         try:
             for log in run_data_wrestling():
-                if stop_flag.is_set():  # Check the stop flag on each iteration
+                if stop_flag.is_set():  
                     print("Stopping data wrestling process.")
-                    break  # Exit the loop if stop is requested
+                    break 
 
                 # Emit logs to the frontend in real-time
                 socketio.emit('log_message', log)
@@ -178,7 +178,7 @@ def run_data_wrestling_background(app):
 # Route to start the data wrestling process
 @core_blueprint.route('/run_datawrestler', methods=['POST'])
 def run_datawrestler_route():
-    stop_flag.clear()  # Clear the stop flag before starting
+    stop_flag.clear()  
     app = current_app._get_current_object()
     thread = threading.Thread(target=run_data_wrestling_background, args=(app,), daemon=True)
     thread.start()
@@ -187,7 +187,7 @@ def run_datawrestler_route():
 # Route to stop the data wrestling process
 @core_blueprint.route('/stop_datawrestler', methods=['POST'])
 def stop_datawrestler_route():
-    stop_flag.set()  # Set the stop flag to stop the process
+    stop_flag.set() 
     return jsonify({"message": "Data wrestling process stopped successfully"}), 200
 
 # Route for message logs with pagination

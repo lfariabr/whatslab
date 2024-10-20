@@ -101,6 +101,7 @@ def fetch_appointments(start_date, end_date):
     # Filtra e limpa os appointments após coletar todos
     filtered_appointments = filter_and_clean_appointments(all_appointments)
     return filtered_appointments
+    
   
 def filter_and_clean_appointments(appointments):
     # Regex patterns to filter appointments

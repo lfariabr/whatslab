@@ -9,13 +9,15 @@ import logging
 import re
 from markupsafe import Markup
 from sqlalchemy import event, Engine
-
+load_dotenv()
 
 app = Flask(__name__, 
             template_folder='../frontend/templates',
             static_folder='../frontend/static')     
 
 CORS(app)
+
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
 # Vercel
 app.instance_path = '/tmp/instance'
@@ -24,36 +26,40 @@ app.instance_path = '/tmp/instance'
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'users', 'messages', 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
-load_dotenv()
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-# app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL') # SSL req already at .env
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL') + "&connect_timeout=300"
+######################
+## DATABASE dev | lines 31 & 32
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///mydatabase.db' # for local dev
+db = SQLAlchemy(app)
 
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///mydatabase.db' # for local dev
+# #####################
+# DATABASE prod | lines 36 - 57
+# app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL') + "&connect_timeout=300"
+# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# # SQLAlchemy optimizations for connection handling
+# app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+#     'pool_pre_ping': True,
+#     'pool_size': 5,  # Adjust as per your needs, smaller pools can reduce initialization time.
+#     'max_overflow': 10,  # Number of connections exceeding the pool size.
+#     'pool_timeout': 30,  # Timeout for getting a connection from the pool.
+#     'pool_recycle': 1800  # Recycle connections every 30 minutes.
+# }
 
-# SQLAlchemy optimizations for connection handling
-app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-    'pool_pre_ping': True,
-    'pool_size': 5,  # Adjust as per your needs, smaller pools can reduce initialization time.
-    'max_overflow': 10,  # Number of connections exceeding the pool size.
-    'pool_timeout': 30,  # Timeout for getting a connection from the pool.
-    'pool_recycle': 1800  # Recycle connections every 30 minutes.
-}
+# # Set the statement timeout to 20 minutes (1,200,000 ms)
+# @event.listens_for(Engine, "connect")
+# def set_timeout(dbapi_connection, connection_record):
+#     cursor = dbapi_connection.cursor()
+#     cursor.execute("SET statement_timeout = 1200000;")  # 20 minutes
+#     cursor.close()
+# #####################
+# #####################
+# db = SQLAlchemy(app, session_options={"autocommit": False, "autoflush": False})
 
-# db = SQLAlchemy(app)
-db = SQLAlchemy(app, session_options={"autocommit": False, "autoflush": False})
+######################
+## MIGRATE / LOGIN / LOGS
+######################
 migrate = Migrate(app, db)
 
-# Set the statement timeout to 20 minutes (1,200,000 ms)
-@event.listens_for(Engine, "connect")
-def set_timeout(dbapi_connection, connection_record):
-    cursor = dbapi_connection.cursor()
-    cursor.execute("SET statement_timeout = 1200000;")  # 20 minutes
-    cursor.close()
-
-# Flask Login
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'users.login'
@@ -64,10 +70,13 @@ def load_user(user_id):
     return User.query.get(user_id)
 
 # Adjust logging to reduce verbosity
-logging.basicConfig(level=logging.WARNING)
-# Enable SQLAlchemy engine logging for debugging (replace `INFO` with `DEBUG` for more detail)
+logging.basicConfig(level=logging.WARNING,
+                    handlers=[logging.FileHandler("app.log"),
+                              logging.FileHandler("errors.log"),
+                            #   logging.StreamHandler()  # Uncomment to log to console
+                    ]
+                )
 logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
-# Optionally, you can log errors specifically for SQLAlchemy
 logging.getLogger('sqlalchemy.pool').setLevel(logging.INFO)
 logging.getLogger('sqlalchemy.dialects').setLevel(logging.INFO)
 

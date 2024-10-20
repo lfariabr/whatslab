@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from backend.config import db, app
 from backend.users.models import MessageList, UserPhone
 from backend.users.forms import MessageForm, UserPhoneForm
-from backend.datawrestler.resolvers2 import run_data_wrestling
+from backend.datawrestler.resolvers import run_data_wrestling
 from backend.apisocialhub.models import MessageLog
 from werkzeug.utils import secure_filename
 import os
