@@ -233,6 +233,10 @@ def run_data_wrestling():
         leads_list = leads_df.to_dict(orient='records')
         leads_json = json.dumps(leads_list, default=str, ensure_ascii=False, indent=4)
         print(leads_json)
+        if stop_flag.is_set():
+            print("Stopping data wrestling process.")
+            yield "Stopping data wrestling process.\n"
+            return
         
         keep_alive() 
         print("resting 30s at message and phones dictionaries")
@@ -247,6 +251,10 @@ def run_data_wrestling():
 
         print("Entering the for loop")
         keep_alive() 
+        if stop_flag.is_set():
+            print("Stopping data wrestling process.")
+            yield "Stopping data wrestling process.\n"
+            return
         # Send messages based on processed leads
         for index, cliente in leads_df.iterrows():
             phone = cliente['phone']

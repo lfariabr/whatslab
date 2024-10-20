@@ -165,8 +165,9 @@ def run_data_wrestling_background(app):
     with app.app_context():
         try:
             for log in run_data_wrestling():
-                if stop_flag.is_set():  
-                    print("Stopping data wrestling process.")
+                if stop_flag.is_set():
+                    print("")  
+                    print("Data wrestling STOPPED.")
                     break 
 
                 # Emit logs to the frontend in real-time
@@ -187,6 +188,8 @@ def run_datawrestler_route():
 # Route to stop the data wrestling process
 @core_blueprint.route('/stop_datawrestler', methods=['POST'])
 def stop_datawrestler_route():
+    print("...")
+    print("STOP request received")
     stop_flag.set() 
     return jsonify({"message": "Data wrestling process stopped successfully"}), 200
 
