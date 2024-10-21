@@ -76,10 +76,10 @@ error_file_path = "/tmp/errors.log"
 # Logs
 logging.basicConfig(level=logging.DEBUG,
                     handlers=[
-                                logging.FileHandler("app.log"),
-                              logging.FileHandler("errors.log"),
-                            #   RotatingFileHandler(log_file_path, maxBytes=10240, backupCount=3),
-                                # RotatingFileHandler(error_file_path, maxBytes=10240, backupCount=3),
+                                # logging.FileHandler("app.log"),
+                            #   logging.FileHandler("errors.log"),
+                              RotatingFileHandler(log_file_path, maxBytes=10240, backupCount=3),
+                                RotatingFileHandler(error_file_path, maxBytes=10240, backupCount=3),
                               logging.StreamHandler()  # Uncomment to log to console
                     ], 
                     format='%(asctime)s - %(levelname)s - %(message)s',
