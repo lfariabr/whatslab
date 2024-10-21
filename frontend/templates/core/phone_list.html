@@ -5,9 +5,11 @@
     <div class="container">
         <h2 class="mb-4">Lista de Telefones</h2>
         <a href="{{ url_for('core.new_phone') }}" class="btn btn-primary mb-3">Cadastrar Novo Telefone</a>
-        <table class="table">
-            <thead>
-                <tr>
+        
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered">
+                <thead class="thead-dark">
+                    <tr>
                     <th>#</th>
                     <th>Telefone</th>
                     <th>Descrição</th>

@@ -105,26 +105,15 @@ def data_wrestling(leads_landing, leads_whatsapp, appointments, count_messages_b
     df_leads_receive_message = leads_whatsapp + leads_landing
     sent_messages_phones = {row[0]: row[1] for row in count_messages_by_phone}
 
-    # leads_phones = {lead['telephone'][0] for lead in leads if lead['telephone']}
-    # we changed it because the return is not treated on fetch leads
-    # like it is on fetch appointments with how the json comes from graphQL
     leads_phones = {
                 lead['telephone'] for lead 
                     in leads if lead['telephone']
                     }  
-                    # Adjusted for single value
-
     appointment_phones = {
                         appointment['telephones'][0] for appointment
                           in appointments if appointment['telephones']
                           }
-    # appointment_phones = {
-                    # telephone['number'] for appointment 
-                    # in appointmentsif appointment['telephones']
-                    # for telephone in appointment['telephones']  
-                    # # Iterate over all telephones
-                    # }
-    
+
     leads_df = []
     for lead in df_leads_receive_message:
         phone = lead.phone.strip()
@@ -340,7 +329,11 @@ def run_data_wrestling():
                             print(f"Lead {phone} criado com sucesso!")
                         else:
                             print(f"Error creating lead: {response}")
-
+                        
+                        # Rest for a minute before processing the next lead
+                        print(f"Waiting 1 minute before processing the next lead...")
+                        time.sleep(60)
+                        
                         # Log lead creation
                         try:
                             lead = db.session.query(LeadWhatsapp).filter_by(phone=cliente['phone']).first()

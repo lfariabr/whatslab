@@ -7,6 +7,7 @@ from datetime import datetime
 from sqlalchemy.orm import relationship
 from ..users.models import UserPhone, MessageList
 from ..leadgen.models import LeadWhatsapp, LeadLandingPage
+from ..users.models import User
 
 # Modelo para armazenar logs de mensagens enviadas
 class MessageLog(db.Model):
@@ -38,6 +39,9 @@ class MessageLog(db.Model):
     status = db.Column(db.String(50))  # e.g., 'sent', 'failed'
     message_text = db.Column(db.String(1000))  # Campo para armazenar o texto da mensagem
 
+    # # Adding user relationship
+    # user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    # user = db.relationship("User", backref=db.backref("message_logs", lazy=True))
 
     def __init__(self, message_title, sender_phone_id, sender_phone_number, source, lead_phone_id, lead_phone_number, status, message_text=None, date_sent=datetime.utcnow()):
 

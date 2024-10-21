@@ -34,9 +34,12 @@ class LeadForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     phone = StringField('Phone', validators=[DataRequired()])
     store = SelectField('Store', choices=store_options, validators=[DataRequired()])
-    # tag = StringField('Tag', validators=[DataRequired()])
     source = StringField('Source')
     submit = SubmitField('Submit')
+    tag = StringField('Tag')  # Ensure this field is added if it's used in the template
+    region = StringField('Region')  # Adding if needed
+    tags = StringField('Tags')  # Adding if needed
+
 
 
 class LeadWhatsappForm(FlaskForm):

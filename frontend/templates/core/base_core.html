@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CRM WhatsApp - Relacionamento com Leads</title>
+    <title>Konquista - Relacionamento com Leads</title>
 
     <!-- Favicon -->
     <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
@@ -28,6 +28,7 @@
         /* Global Styles - Dark Theme */
         body {
             font-family: 'Montserrat', sans-serif;
+            font-size: 12px; /* Reduced font size */
             background-color: #121212; /* Dark background */
             color: #e0e0e0; /* Light text */
             margin: 0;
@@ -49,7 +50,7 @@
 
         .navbar-custom .navbar-brand {
             font-weight: 700;
-            font-size: 1.8rem;
+            font-size: 1.0rem;
             color: #25d366 !important; /* WhatsApp green */
             letter-spacing: 1px;
             text-transform: uppercase;
@@ -63,6 +64,7 @@
             color: #e0e0e0 !important; /* Light text */
             margin-left: 1.2rem;
             font-weight: 500;
+            font-size: 0.9rem;
         }
 
         .navbar-custom .nav-item .nav-link:hover {
@@ -194,6 +196,9 @@
 
         /* Responsive Adjustments */
         @media (max-width: 768px) {
+            body {
+                font-size: 0.9rem;
+            }
             .navbar .navbar-nav {
                 display: none;
             }
@@ -214,12 +219,34 @@
             0% { opacity: 0; }
             100% { opacity: 1; }
         }
+
+        /* Adjust spacing for container */
+        .container.mt-5.pt-5 {
+            margin-top: 6rem; /* Increased to push content below navbar */
+        }
+
+        /* Content Spacing */
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            font-size: 0.9rem; /* Adjusted paragraph font size */
+        }
+
+        /* Footer Styling */
+        .footer-custom {
+            padding: 1rem 0; /* Adjusted padding */
+        }
+
     </style>
 </head>
 <body>
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
-    <a class="navbar-brand" href="{{ url_for('index') }}">CRM WhatsApp</a>
+    <a class="navbar-brand" href="{{ url_for('index') }}">Konquista</a>
     <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ml-auto">
             {% if current_user.is_authenticated %}
@@ -227,7 +254,7 @@
                 <a class="nav-link" href="{{ url_for('core.index') }}">Core</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('leadgen.view_leads_whatsapp') }}">Contatos</a>
+                <a class="nav-link" href="{{ url_for('core.view_leads_whatsapp') }}">Contatos</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('core.phone_list') }}">Telefones</a>
@@ -290,8 +317,8 @@
 
 <!-- Footer -->
 <footer class="footer-custom">
-    <p>&copy; 2024 CRM WhatsApp. Todos os direitos reservados.</p>
-    <p><a href="mailto:contato@whatsappcrm.com.br">contato@whatsappcrm.com.br</a></p>
+    <p>&copy; 2024 Konquista. Todos os direitos reservados.</p>
+    <p><a href="mailto:contato@konquista.com.br">contato@konquista.com.br</a></p>
     <p class="social-icons">
         <a href="https://facebook.com/seuPerfil" target="_blank"><i class="fab fa-facebook-f"></i></a>
         <a href="https://instagram.com/seuPerfil" target="_blank"><i class="fab fa-instagram"></i></a>

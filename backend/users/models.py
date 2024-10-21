@@ -13,8 +13,11 @@ class User(db.Model,UserMixin):
     password_hash = db.Column(db.String(256))
     profile_image = db.Column(db.String(64), nullable=True, default='default_profile.jpg')
 
-    # posts = db.relationship('BlogPost', back_populates='author', lazy=True)
-    # phones = db.relationship('Phone', backref='user', lazy=True)
+    # # Relações inversas
+    # leadlandingpages = db.relationship('LeadLandingPage', backref='user', lazy='dynamic')
+    # userphones = db.relationship('UserPhone', backref='user', lazy='dynamic')
+    # messagelist = db.relationship('MessageList', backref='user', lazy='dynamic')
+    # message_logs = db.relationship('MessageLog', backref='user', lazy='dynamic')
 
     def __init__(self, email, username, password):
         self.email = email
@@ -37,6 +40,9 @@ class UserPhone(db.Model):
     phone_token = db.Column(db.String(256))
     phone_description = db.Column(db.String(256))  # Novo campo adicionado
 
+    # # Adding user relationship
+    # user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    # user = db.relationship("User", backref=db.backref("userphones", lazy=True))
 
     def __init__(self, user_id, phone_number, phone_token, phone_description=None):
         self.user_id = user_id
@@ -55,7 +61,11 @@ class MessageList(db.Model):
     title = db.Column(db.String(64))
     text = db.Column(db.Text)
     interval = db.Column(db.Integer) # days or hours between messages
-    file = db.Column(db.String(256)) # photo, video, audio, etc
+    file = db.Column(db.String(256)) # photo, video,ls migrations/versions/ audio, etc
+
+    # # Adding user relationship
+    # user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    # user = db.relationship("User", backref=db.backref("messagelist", lazy=True))
 
     # Método para converter a instância em um dicionário
     def to_dict(self):
